@@ -31,7 +31,7 @@ async def theme_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_keyboard = [[sub] for sub in THEMES[theme]]
     await update.message.reply_text(
-        f"Выбери подкатегорию для темы "{theme}":",
+        f"Выбери подкатегорию для темы '{theme}':",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
     )
     return MATCHING
