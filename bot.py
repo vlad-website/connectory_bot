@@ -41,7 +41,7 @@ async def match_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     theme = context.user_data.get("theme", "")
     context.user_data["subtheme"] = sub
     await update.message.reply_text(
-        f"Отлично! Сейчас подберу тебе собеседника по теме "{theme}" — "{sub}".
+        f"Отлично! Сейчас подберу тебе собеседника по теме '{theme}' — '{sub}'.
 (пока в разработке)"
     )
     return ConversationHandler.END
