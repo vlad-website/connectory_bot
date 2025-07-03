@@ -1,68 +1,68 @@
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
+import logging
 import os
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters,
+)
 
-THEME, MATCHING = range(2)
-user_data = {}
+# Включаем логирование
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
 
-THEMES = {
-    "Книги и литература": ["Романы", "Детективы", "Приключения", "Другое"],
-    "Фильмы и сериалы": ["Боевики", "Комедии", "Документальные", "Любое"],
-    "Стартапы и бизнес": ["Идеи", "Поиск партнёров", "Нетворкинг", "Обсуждение"],
-    "Технологии": ["AI", "Программирование", "Наука", "Другое"],
-    "Психология и философия": ["Сознание", "Эмоции", "Размышления", "Всё подряд"],
-    "Музыка": ["Рок", "Поп", "Классика", "Другое"]
+# Временное хранилище пользователей
+users = {}
+
+# Актуальные темы и подкатегории
+topics = {
+    "IT": ["Программирование", "Дизайн", "AI", "Карьера в IT"],
+    "Психология": ["Самооценка", "Тревожность", "Отношения", "Мотивация"],
+    "Хобби": ["Игры", "Путешествия", "Книги", "Музыка"],
+    "Бизнес": ["Стартапы", "Поиск партнёров", "Маркетинг", "Финансы"],
+    "Культура и искусство": ["Фильмы", "Литература", "Живопись", "Фотография"],
+    "Здоровье и спорт": ["Фитнес", "Питание", "Медитация", "ЗОЖ"],
 }
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    reply_keyboard = [[theme] for theme in THEMES]
-    await update.message.reply_text(
-        "Привет! Выбери тему для беседы:",
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-    )
-    return THEME
+    keyboard = [[key] for key in topics.keys()]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    await update.message.reply_text("Привет! Выбери тему для общения:", reply_markup=reply_markup)
 
-async def theme_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    theme = update.message.text
-    if theme not in THEMES:
-        await update.message.reply_text("Выбери тему из предложенных.")
-        return THEME
-    context.user_data["theme"] = theme
+async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.message.from_user.id
+    text = update.message.text
 
-    reply_keyboard = [[sub] for sub in THEMES[theme]]
-    await update.message.reply_text(
-        f"Выбери подкатегорию для темы '{theme}':",
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-    )
-    return MATCHING
+    # Пользователь выбрал тему
+    if text in topics:
+        users[user_id] = {"theme": text}
+        keyboard = [[sub] for sub in topics[text]]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        await update.message.reply_text("Теперь выбери подкатегорию:", reply_markup=reply_markup)
+        return
 
-async def match_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    sub = update.message.text
-    theme = context.user_data.get("theme", "")
-    context.user_data["subtheme"] = sub
-    await update.message.reply_text(
-        f"Отлично! Сейчас подберу тебе собеседника по теме '{theme}' — '{sub}'.
-(пока в разработке)"
-    )
-    return ConversationHandler.END
+    # Пользователь выбрал подкатегорию
+    if user_id in users and "theme" in users[user_id] and "sub" not in users[user_id]:
+        users[user_id]["sub"] = text
+        theme = users[user_id]["theme"]
+        sub = users[user_id]["sub"]
+        await update.message.reply_text(
+            f"Отлично! Сейчас подберу тебе собеседника по теме «{theme}» — «{sub}»."
+        )
+        return
 
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Диалог отменён.")
-    return ConversationHandler.END
+    await update.message.reply_text("Пожалуйста, выбери тему или подкатегорию из списка.")
 
-def main():
-    app = Application.builder().token(os.getenv("TG_TOKEN")).build()
+if name == "__main__":
+    TOKEN = os.getenv("BOT_TOKEN")
+    if not TOKEN:
+        print("Ошибка: переменная окружения BOT_TOKEN не установлена.")
+        exit(1)
 
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            THEME: [MessageHandler(filters.TEXT & ~filters.COMMAND, theme_choice)],
-            MATCHING: [MessageHandler(filters.TEXT & ~filters.COMMAND, match_user)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)]
-    )
-    app.add_handler(conv_handler)
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
     app.run_polling()
-
-if __name__ == "__main__":
-    main()
