@@ -27,16 +27,17 @@ topics = {
     "Здоровье и спорт": ["Фитнес", "Питание", "Медитация", "ЗОЖ"],
 }
 
+# Обработчик команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[key] for key in topics.keys()]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     await update.message.reply_text("Привет! Выбери тему для общения:", reply_markup=reply_markup)
 
+# Обработчик сообщений
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     text = update.message.text
 
-    # Пользователь выбрал тему
     if text in topics:
         users[user_id] = {"theme": text}
         keyboard = [[sub] for sub in topics[text]]
@@ -44,7 +45,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Теперь выбери подкатегорию:", reply_markup=reply_markup)
         return
 
-    # Пользователь выбрал подкатегорию
     if user_id in users and "theme" in users[user_id] and "sub" not in users[user_id]:
         users[user_id]["sub"] = text
         theme = users[user_id]["theme"]
@@ -56,6 +56,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Пожалуйста, выбери тему или подкатегорию из списка.")
 
+# Запуск приложения
 if __name__ == "__main__":
     TOKEN = os.getenv("BOT_TOKEN")
     if not TOKEN:
@@ -65,4 +66,9 @@ if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-    app.run_polling()
+
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", "10000")),
+        webhook_url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}"
+    )
