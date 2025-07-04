@@ -105,6 +105,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         users[user_id]["state"] = "choosing_sub"
         keyboard = [[sub] for sub in topics[text]]
         keyboard.append(["🏠 Главное меню"])
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         await update.message.reply_text("Теперь выбери подкатегорию:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
         return
 
