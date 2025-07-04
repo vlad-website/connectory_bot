@@ -206,7 +206,8 @@ if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-    app.run_polling()import logging
+    app.run_polling()
+import logging
 import os
 from asyncio import create_task, sleep
 from datetime import datetime
