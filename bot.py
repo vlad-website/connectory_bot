@@ -111,6 +111,18 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Обработка выбора подкатегории
     if state == "choosing_sub":
+        theme = users[user_id].get("theme")
+        if theme and text in topics.get(theme, []):
+            users[user_id]["sub"] = text
+            users[user_id]["state"] = "menu"
+            await update.message.reply_text(
+                f"Отлично! Выбрана тема: «{theme}» и подкатегория: «{text}».",
+                reply_markup=main_menu_keyboard()
+            )
+            return
+
+        await update.message.reply_text("Пожалуйста, выбери подкатегорию из списка или нажми «🏠 Главное меню».")
+        return
     # Возврат в главное меню
     if text == "🏠 Главное меню":
         users[user_id]["state"] = "choosing_theme"
