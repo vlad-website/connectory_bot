@@ -2,7 +2,7 @@ import logging
 import os
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
-    ApplicationBuilder,
+    Application,
     CommandHandler,
     MessageHandler,
     ContextTypes,
@@ -17,7 +17,7 @@ logging.basicConfig(
 # Временное хранилище пользователей
 users = {}
 
-# Актуальные темы и подкатегории
+# Темы и подкатегории
 topics = {
     "IT": ["Программирование", "Дизайн", "AI", "Карьера в IT"],
     "Психология": ["Самооценка", "Тревожность", "Отношения", "Мотивация"],
@@ -27,13 +27,11 @@ topics = {
     "Здоровье и спорт": ["Фитнес", "Питание", "Медитация", "ЗОЖ"],
 }
 
-# Обработчик команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[key] for key in topics.keys()]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     await update.message.reply_text("Привет! Выбери тему для общения:", reply_markup=reply_markup)
 
-# Обработчик сообщений
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     text = update.message.text
@@ -56,19 +54,15 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Пожалуйста, выбери тему или подкатегорию из списка.")
 
-# Запуск приложения
 if __name__ == "__main__":
     TOKEN = os.getenv("BOT_TOKEN")
     if not TOKEN:
         print("Ошибка: переменная окружения BOT_TOKEN не установлена.")
         exit(1)
 
-    app = ApplicationBuilder().token(TOKEN).build()
+    app = Application.builder().token(TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.environ.get("PORT", "10000")),
-        webhook_url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}"
-    )
+    app.run_polling()
