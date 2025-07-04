@@ -110,16 +110,29 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
 # Обработка выбора подкатегории
-    if state == "choosing_sub":
-        theme = users[user_id].get("theme")
-        if theme and text in topics.get(theme, []):
-            users[user_id]["sub"] = text
-            users[user_id]["state"] = "menu"
-            await update.message.reply_text(
-                f"Отлично! Выбрана тема: «{theme}» и подкатегория: «{text}».",
-                reply_markup=main_menu_keyboard()
-            )
-            return
+if state == "choosing_sub":
+    # Возврат в главное меню
+    if text == "🏠 Главное меню":
+        users[user_id]["state"] = "choosing_theme"
+        keyboard = [[key] for key in topics.keys()]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        await update.message.reply_text("Вы вернулись в главное меню. Выберите тему:", reply_markup=reply_markup)
+        return
+
+    # Нормальная обработка выбора подкатегории
+    theme = users[user_id].get("theme")
+    if theme and text in topics.get(theme, []):
+        users[user_id]["sub"] = text
+        users[user_id]["state"] = "menu"
+        await update.message.reply_text(
+            f"Отлично! Выбрана тема: «{theme}» и подкатегория: «{text}».",
+            reply_markup=main_menu_keyboard()
+        )
+        return
+
+    # Неправильный ввод
+    await update.message.reply_text("Пожалуйста, выбери подкатегорию из списка или нажмите «🏠 Главное меню».")
+    return
 
     # Обмен сообщениями между собеседниками
     if state == "chatting":
