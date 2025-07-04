@@ -93,7 +93,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Пожалуйста, выбери тему или нажми «🏠 Главное меню».")
 
-if name == "__main__":
+if __name__ == "__main__":
     TOKEN = os.getenv("BOT_TOKEN")
     if not TOKEN:
         print("Ошибка: переменная окружения BOT_TOKEN не установлена.")
