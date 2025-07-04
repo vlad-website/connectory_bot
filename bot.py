@@ -312,3 +312,49 @@ async def end_dialog(update, context, user_id):
     state = users[user_id]["state"]
     if state == "chatting":
         partner_id = active_chats.get(user_id)
+        if partner_id:
+            users[partner_id]["state"] = "menu"
+            await context.bot.send_message(partner_id, "Собеседник завершил диалог.", reply_markup=main_menu_keyboard())
+            active_chats.pop(partner_id, None)
+
+        active_chats.pop(user_id, None)
+        users[user_id]["state"] = "menu"
+        await update.message.reply_text("Диалог завершён.", reply_markup=main_menu_keyboard())
+        logger.info(f"User {user_id} завершил диалог.")
+    else:
+        await update.message.reply_text("Вы не в диалоге.")
+
+# ---------- Статистика ----------
+
+def increment_stats(theme, sub):
+    if not os.path.exists("stats.json"):
+        stats = {}
+    else:
+        with open("stats.json", "r", encoding="utf-8") as f:
+            stats = json.load(f)
+    if theme not in stats:
+        stats[theme] = {}
+    if sub not in stats[theme]:
+        stats[theme][sub] = 0
+    stats[theme][sub] += 1
+    with open("stats.json", "w", encoding="utf-8") as f:
+        json.dump(stats, f, ensure_ascii=False, indent=2)
+
+# ---------- Запуск бота ----------
+
+def main():
+    token = os.getenv("BOT_TOKEN")
+    if not token:
+        print("Ошибка: не задан BOT_TOKEN")
+        return
+
+    app = ApplicationBuilder().token(token).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
+
+    logger.info("Бот запущен")
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
