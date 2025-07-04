@@ -109,8 +109,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Теперь выбери подкатегорию:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
         return
 
-# Обработка выбора подкатегории
-if state == "choosing_sub":
+    # Обработка выбора подкатегории
+    if state == "choosing_sub":
     # Возврат в главное меню
     if text == "🏠 Главное меню":
         users[user_id]["state"] = "choosing_theme"
@@ -144,6 +144,8 @@ if state == "choosing_sub":
         return
 
     await update.message.reply_text("Пожалуйста, выбери действие из меню.")
+
+
 
 # Точка входа
 if __name__ == "__main__":
