@@ -138,18 +138,22 @@ async def start_searching(update, context, user_id):
         return
 
     users[user_id]["state"] = "searching"
-    waiting_events[user_id] = asyncio.Event()
     await waiting_queue.put(user_id)
 
+    asyncio.create_task(search_partner_background(update, context, user_id))  # <-- Асинхронная фоновая задача
     await update.message.reply_text("Поиск собеседника...", reply_markup=keyboard_searching())
+
+async def search_partner_background(update, context, user_id):
+    waiting_events[user_id] = asyncio.Event()
     await try_match_partner(user_id, context)
 
     try:
         await asyncio.wait_for(waiting_events[user_id].wait(), timeout=60)
     except asyncio.TimeoutError:
         await remove_from_queue(user_id)
-        users[user_id]["state"] = "menu"
-        await update.message.reply_text("Сейчас все заняты. Попробуйте позже.", reply_markup=keyboard_main_menu())
+        if users.get(user_id, {}).get("state") == "searching":
+            users[user_id]["state"] = "menu"
+            await context.bot.send_message(user_id, "Сейчас все заняты. Попробуйте позже.", reply_markup=keyboard_main_menu())
     finally:
         waiting_events.pop(user_id, None)
 
@@ -179,6 +183,7 @@ async def try_match_partner(user_id, context):
 
     if partner:
         await remove_from_queue(user_id)
+        await remove_from_queue(partner)
         await start_chat(context.bot, user_id, partner)
 
 async def start_chat(bot, user1, user2):
