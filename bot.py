@@ -57,7 +57,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users[user_id] = {"state": "choosing_theme"}
     logger.info(f"User {user_id} started bot.")
 
-    msg = "👋 Привет! Я бот для общения по интересам. Выбери тему:"
+    msg = "👋 Привет! Я бот для знакомств и общения по интересам.\n"
+        "Выбирай тему и подкатегорию — я найду тебе подходящего собеседника!\n"
+        "Выбери тему для общения:"
     await update.message.reply_text(msg, reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -256,18 +258,37 @@ def increment_stats(theme, sub):
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
 # --- Запуск бота ---
-def main():
+from aiohttp import web
+from telegram.ext import Application
+
+async def handle_webhook(request):
+    data = await request.json()
+    update = Update.de_json(data, application.bot)
+    await application.process_update(update)
+    return web.Response()
+
+async def on_startup(app):
     token = os.getenv("BOT_TOKEN")
     if not token:
         print("Ошибка: переменная BOT_TOKEN не задана.")
         return
 
-    app = ApplicationBuilder().token(token).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
+    webhook_url = os.getenv("WEBHOOK_URL")
+    if not webhook_url:
+        print("Ошибка: переменная WEBHOOK_URL не задана.")
+        return
 
-    logger.info("Бот запущен")
-    app.run_polling()
+    await application.bot.set_webhook(webhook_url)
+
+# Собираем приложение
+application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
+application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
+
+# aiohttp-приложение
+web_app = web.Application()
+web_app.router.add_post("/", handle_webhook)
+web_app.on_startup.append(on_startup)
 
 if __name__ == "__main__":
-    main()
+    web.run_app(web_app, port=int(os.environ.get("PORT", 8080)))
