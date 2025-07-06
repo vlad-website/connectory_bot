@@ -271,13 +271,15 @@ def increment_stats(theme, sub):
 
 # --- Webhook + Web App ---
 async def handle_webhook(request):
-    data = await request.json()
-    update = Update.de_json(data, application.bot)
-    await application.process_update(update)
-    return web.Response(text="ok")
-
-async def health(request):
-    return web.Response(text="OK")
+    try:
+        data = await request.json()
+        update = Update.de_json(data, application.bot)
+        await application.process_update(update)
+        return web.Response(text="ok")
+    except Exception as e:
+        # Логируем ошибку, чтобы понять причину 500-й ошибки
+        print(f"Ошибка при обработке webhook: {e}")
+        return web.Response(status=500, text="error")
 
 async def on_startup(app):
     token = os.getenv("BOT_TOKEN")
