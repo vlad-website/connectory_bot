@@ -2,14 +2,17 @@ import logging
 import os
 import json
 import asyncio
+
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
+    Application,
     CommandHandler,
     MessageHandler,
     ContextTypes,
     filters,
 )
+from aiohttp import web
 
 # --- Константы и настройки ---
 ADMIN_ID = 491000185
@@ -21,7 +24,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# --- Данные пользователей и состояния ---
 users = {}
 waiting_queue = asyncio.Queue()
 active_chats = {}
@@ -38,6 +40,7 @@ topics = {
 for t in topics:
     topics[t].append("Любая подкатегория")
 
+
 # --- Клавиатуры ---
 def keyboard_main_menu():
     return ReplyKeyboardMarkup([["🔍 Найти собеседника"], ["❌ Завершить диалог"], ["🏠 Главное меню"]], resize_keyboard=True)
@@ -51,16 +54,20 @@ def keyboard_searching():
 def keyboard_dialog():
     return ReplyKeyboardMarkup([["Найти нового собеседника"], ["❌ Завершить диалог"]], resize_keyboard=True)
 
+
 # --- Обработчики ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     users[user_id] = {"state": "choosing_theme"}
     logger.info(f"User {user_id} started bot.")
 
-    msg = "👋 Привет! Я бот для знакомств и общения по интересам.\n"
-    "Выбирай тему и подкатегорию — я найду тебе подходящего собеседника!\n"
-    "Выбери тему для общения:"
+    msg = (
+        "👋 Привет! Я бот для знакомств и общения по интересам.\n"
+        "Выбирай тему и подкатегорию — я найду тебе подходящего собеседника!\n"
+        "Выбери тему для общения:"
+    )
     await update.message.reply_text(msg, reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
+
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -126,6 +133,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Выберите тему или нажмите «🏠 Главное меню».")
 
+
 # --- Логика поиска ---
 async def start_searching(update, context, user_id):
     if users[user_id].get("state") in ["searching", "chatting"]:
@@ -142,8 +150,9 @@ async def start_searching(update, context, user_id):
     users[user_id]["state"] = "searching"
     await waiting_queue.put(user_id)
 
-    asyncio.create_task(search_partner_background(update, context, user_id))  # <-- Асинхронная фоновая задача
+    asyncio.create_task(search_partner_background(update, context, user_id))
     await update.message.reply_text("Поиск собеседника...", reply_markup=keyboard_searching())
+
 
 async def search_partner_background(update, context, user_id):
     waiting_events[user_id] = asyncio.Event()
@@ -158,6 +167,7 @@ async def search_partner_background(update, context, user_id):
             await context.bot.send_message(user_id, "Сейчас все заняты. Попробуйте позже.", reply_markup=keyboard_main_menu())
     finally:
         waiting_events.pop(user_id, None)
+
 
 async def try_match_partner(user_id, context):
     if users[user_id].get("state") != "searching":
@@ -188,6 +198,7 @@ async def try_match_partner(user_id, context):
         await remove_from_queue(partner)
         await start_chat(context.bot, user_id, partner)
 
+
 async def start_chat(bot, user1, user2):
     for uid in (user1, user2):
         users[uid]["state"] = "chatting"
@@ -208,6 +219,7 @@ async def start_chat(bot, user1, user2):
         if uid in waiting_events:
             waiting_events[uid].set()
 
+
 async def cancel_search(update, context, user_id):
     if users[user_id]["state"] == "searching":
         users[user_id]["state"] = "menu"
@@ -215,6 +227,7 @@ async def cancel_search(update, context, user_id):
         if user_id in waiting_events:
             waiting_events[user_id].set()
         await update.message.reply_text("Поиск отменён.", reply_markup=keyboard_main_menu())
+
 
 async def end_dialog(update, context, user_id):
     if users[user_id]["state"] != "chatting":
@@ -231,18 +244,16 @@ async def end_dialog(update, context, user_id):
 
     await update.message.reply_text("Диалог завершён.", reply_markup=keyboard_main_menu())
 
+
 async def remove_from_queue(user_id):
     temp = []
-    removed = False
     while not waiting_queue.empty():
         u = await waiting_queue.get()
         if u != user_id:
             temp.append(u)
-        else:
-            removed = True
     for u in temp:
         await waiting_queue.put(u)
-    return removed
+
 
 # --- Статистика ---
 def increment_stats(theme, sub):
@@ -257,38 +268,38 @@ def increment_stats(theme, sub):
     with open("stats.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
-# --- Запуск бота ---
-from aiohttp import web
-from telegram.ext import Application
 
+# --- Webhook + Web App ---
 async def handle_webhook(request):
     data = await request.json()
     update = Update.de_json(data, application.bot)
     await application.process_update(update)
-    return web.Response()
+    return web.Response(text="ok")
+
+async def health(request):
+    return web.Response(text="OK")
 
 async def on_startup(app):
     token = os.getenv("BOT_TOKEN")
-    if not token:
-        print("Ошибка: переменная BOT_TOKEN не задана.")
-        return
-
     webhook_url = os.getenv("WEBHOOK_URL")
-    if not webhook_url:
-        print("Ошибка: переменная WEBHOOK_URL не задана.")
+
+    if not token or not webhook_url:
+        print("❌ BOT_TOKEN или WEBHOOK_URL не заданы")
         return
 
+    print(f"✅ Устанавливаю webhook: {webhook_url}")
     await application.bot.set_webhook(webhook_url)
 
-# Собираем приложение
-application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
+
+application: Application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
-# aiohttp-приложение
 web_app = web.Application()
 web_app.router.add_post("/", handle_webhook)
+web_app.router.add_get("/health", health)
 web_app.on_startup.append(on_startup)
 
 if __name__ == "__main__":
-    web.run_app(web_app, port=int(os.environ.get("PORT", 8080)))
+    port = int(os.environ.get("PORT", 8080))
+    web.run_app(web_app, port=port)
