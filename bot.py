@@ -57,8 +57,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users[user_id] = {"state": "choosing_theme"}
     logger.info(f"User {user_id} started bot.")
 
-    msg =
-        "👋 Привет! Я бот для знакомств и общения по интересам.\n"
+    msg = "👋 Привет! Я бот для знакомств и общения по интересам.\n"
         "Выбирай тему и подкатегорию — я найду тебе подходящего собеседника!\n"
         "Выбери тему для общения:"
     await update.message.reply_text(msg, reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
