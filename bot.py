@@ -292,6 +292,8 @@ async def on_startup(app):
     if not token or not webhook_url:
         print("❌ BOT_TOKEN или WEBHOOK_URL не заданы")
         return
+        
+    await application.initialize()
 
     print(f"✅ Устанавливаю webhook: {webhook_url}")
     await application.bot.set_webhook(webhook_url)
