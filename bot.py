@@ -269,6 +269,10 @@ def increment_stats(theme, sub):
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
 
+# --- Health-check endpoint ---
+async def health(request):
+    return web.Response(text="OK")
+
 # --- Webhook + Web App ---
 async def handle_webhook(request):
     try:
