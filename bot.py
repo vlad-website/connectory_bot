@@ -3,6 +3,7 @@ import os
 import json
 import asyncio
 
+from db import init_db, get_user, create_user, update_user_state, update_user_nickname, update_user_gender
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -61,34 +62,45 @@ def keyboard_dialog():
 # --- Обработчики ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
+    user = await get_user(user_id)
 
-    if user_id not in users:
-        users[user_id] = {}
-
-    users[user_id]["state"] = STATE_NICKNAME
-    await update.message.reply_text(
-        "👋 Привет! Я бот для знакомств и общения по интересам.\n"
-        "Находи собеседников только на интересующие тебя темы!\n"
-        "Введи свой ник (имя, по которому тебя увидит собеседник):"
-    )
-
+    if user:
+        nickname = user["nickname"] or "друг"
+        await update.message.reply_text(
+            f"👋 С возвращением, {nickname}!",
+            reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True)
+        )
+    else:
+        await create_user(user_id)
+        await update_user_state(user_id, STATE_NICKNAME)
+        await update.message.reply_text(
+            "👋 Привет! Я бот для знакомств и общения по интересам.\n"
+            "Находи собеседников только на интересующие тебя темы!\n"
+            "Введи свой ник (имя, по которому тебя увидит собеседник):"
+        )
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    text = update.message.text
+    text = update.message.text.strip()
 
     # --- Новый пользователь: запускаем анкету ---
-    if user_id not in users:
-        users[user_id] = {"state": STATE_NICKNAME}
+    user = await get_user(user_id)
+    if not user:
+        await create_user(user_id)
+        await update_user_state(user_id, STATE_NICKNAME)
         await update.message.reply_text("👋 Привет! Введи свой ник:")
         return
 
+    # --- Дальнейшие действия после анкеты ---
+    state = user["state"]
+    logger.info(f"User {user_id} state: {state}, message: {text}")
+
     # --- Обработка анкеты: никнейм ---
-    if users[user_id]["state"] == STATE_NICKNAME:
-        users[user_id]["nickname"] = text.strip()[:32]
-        users[user_id]["state"] = STATE_GENDER
+    if state == STATE_NICKNAME:
+        await update_user_nickname(user_id, text[:32])
+        await update_user_state(user_id, STATE_GENDER)
         await update.message.reply_text(
-            f"Спасибо, {users[user_id]['nickname']}! Теперь выбери свой пол:",
+            f"Спасибо, {text[:32]}! Теперь выбери свой пол:",
             reply_markup=ReplyKeyboardMarkup(
                 [["Мужской"], ["Женский"], ["Не указывать"]],
                 resize_keyboard=True,
@@ -98,28 +110,25 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # --- Обработка анкеты: пол ---
-    if users[user_id]["state"] == STATE_GENDER:
+    if state == STATE_GENDER:
         if text not in ["Мужской", "Женский", "Не указывать"]:
             await update.message.reply_text("Пожалуйста, выбери пол из предложенных вариантов.")
             return
 
-        users[user_id]["gender"] = text
-        users[user_id]["state"] = "choosing_theme"
-        logger.info(f"User {user_id} registered: {users[user_id]}")
+        await update_user_gender(user_id, text)
+        await update_user_state(user_id, "choosing_theme")
         await update.message.reply_text(
             "✅ Готово! Теперь выбери тему для общения:",
             reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True)
         )
         return
 
-    # --- Дальнейшие действия после анкеты ---
-    state = users[user_id]["state"]
-    logger.info(f"User {user_id} state: {state}, message: {text}")
-
     if text == "🏠 Главное меню":
-        users[user_id]["state"] = "choosing_theme"
+        await update_user_state(user_id, "choosing_theme")
         await update.message.reply_text("Выберите тему:", reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
         return
+    user_id = update.effective_user.id
+    text = update.message.text
 
     # … дальше — остальная логика (выбор темы, подкатегории и т.д.)
 
