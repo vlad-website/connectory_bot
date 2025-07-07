@@ -351,6 +351,12 @@ async def init_db():
 
 from db import init_db
 
+application: Application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
+
+# Обработчики команд и сообщений
+application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
+
 async def on_startup(app):
     token = os.getenv("BOT_TOKEN")
     webhook_url = os.getenv("WEBHOOK_URL")
@@ -359,23 +365,18 @@ async def on_startup(app):
         print("❌ BOT_TOKEN или WEBHOOK_URL не заданы")
         return
 
-    # Инициализируем БД
-    await init_db()
+    await init_db()  # ← инициализация базы
 
     await application.initialize()
     print(f"✅ Устанавливаю webhook: {webhook_url}")
     await application.bot.set_webhook(webhook_url)
-
-
-application: Application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
-application.add_handler(CommandHandler("start", start))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
 web_app = web.Application()
 web_app.router.add_post("/", handle_webhook)
 web_app.router.add_get("/health", health)
 web_app.on_startup.append(on_startup)
 
+# ✅ Правильный запуск
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     web.run_app(web_app, port=port)
