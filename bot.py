@@ -321,53 +321,36 @@ async def health(request):
 # --- Webhook + Web App ---
 async def handle_webhook(request):
     try:
-        print("Получен webhook!")
         data = await request.json()
-        
         update = Update.de_json(data, application.bot)
-        await application.update_queue.put(update)
-        
-        
+        await application.process_update(update)
         return web.Response(text="ok")
     except Exception as e:
-        print(f"Ошибка при обработке webhook: {e}")
+        logger.error("Ошибка при обработке webhook", exc_info=True)
         return web.Response(status=500, text="error")
 
-# --- Инициализация базы данных ---
-
-from db import init_db
-
-application: Application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
-
-# Обработчики команд и сообщений
-application.add_handler(CommandHandler("start", start))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
+async def health(request):
+    return web.Response(text="OK")
 
 async def on_startup(app):
-    token = os.getenv("BOT_TOKEN")
+    await application.initialize()  # ❗️обязательно
     webhook_url = os.getenv("WEBHOOK_URL")
-
-    if not token or not webhook_url:
-        print("❌ BOT_TOKEN или WEBHOOK_URL не заданы")
+    if not webhook_url:
+        print("❌ WEBHOOK_URL не задан")
         return
-
-    print("🔧 [on_startup] Перед вызовом init_db()")
-    try:
-        await init_db()
-        print("✅ [on_startup] База данных инициализирована")
-    except Exception as e:
-        print(f"❌ [on_startup] Ошибка инициализации базы: {e}")
-
-    await application.initialize()
     print(f"✅ Устанавливаю webhook: {webhook_url}")
     await application.bot.set_webhook(webhook_url)
+
+# --- Запуск ---
+application: Application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
+application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
 web_app = web.Application()
 web_app.router.add_post("/", handle_webhook)
 web_app.router.add_get("/health", health)
 web_app.on_startup.append(on_startup)
 
-# ✅ Правильный запуск
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 10000))
     web.run_app(web_app, port=port)
