@@ -349,6 +349,8 @@ async def init_db():
     """)
     await conn.close()
 
+from db import init_db
+
 async def on_startup(app):
     token = os.getenv("BOT_TOKEN")
     webhook_url = os.getenv("WEBHOOK_URL")
