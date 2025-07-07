@@ -25,6 +25,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 users = {}
+# --- Состояния анкеты ---
+STATE_NICKNAME = "nickname"
+STATE_GENDER = "gender"
 waiting_queue = asyncio.Queue()
 active_chats = {}
 waiting_events = {}
@@ -58,24 +61,58 @@ def keyboard_dialog():
 # --- Обработчики ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    users[user_id] = {"state": "choosing_theme"}
-    logger.info(f"User {user_id} started bot.")
 
-    msg = (
+    if user_id not in users:
+        users[user_id] = {}
+
+    users[user_id]["state"] = STATE_NICKNAME
+    await update.message.reply_text(
         "👋 Привет! Я бот для знакомств и общения по интересам.\n"
-        "Выбирай тему и подкатегорию — я найду тебе подходящего собеседника!\n"
-        "Выбери тему для общения:"
+        "Находи собеседников только на интересующие тебя темы!\n"
+        "Введи свой ник (имя, по которому тебя увидит собеседник):"
     )
-    await update.message.reply_text(msg, reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
 
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = update.message.text
 
+    # --- Новый пользователь: запускаем анкету ---
     if user_id not in users:
-        users[user_id] = {"state": "choosing_theme"}
+        users[user_id] = {"state": STATE_NICKNAME}
+        await update.message.reply_text("👋 Привет! Введи свой ник:")
+        return
 
+    # --- Обработка анкеты: никнейм ---
+    if users[user_id]["state"] == STATE_NICKNAME:
+        users[user_id]["nickname"] = text.strip()[:32]
+        users[user_id]["state"] = STATE_GENDER
+        await update.message.reply_text(
+            f"Спасибо, {users[user_id]['nickname']}! Теперь выбери свой пол:",
+            reply_markup=ReplyKeyboardMarkup(
+                [["Мужской"], ["Женский"], ["Не указывать"]],
+                resize_keyboard=True,
+                one_time_keyboard=True
+            )
+        )
+        return
+
+    # --- Обработка анкеты: пол ---
+    if users[user_id]["state"] == STATE_GENDER:
+        if text not in ["Мужской", "Женский", "Не указывать"]:
+            await update.message.reply_text("Пожалуйста, выбери пол из предложенных вариантов.")
+            return
+
+        users[user_id]["gender"] = text
+        users[user_id]["state"] = "choosing_theme"
+        logger.info(f"User {user_id} registered: {users[user_id]}")
+        await update.message.reply_text(
+            "✅ Готово! Теперь выбери тему для общения:",
+            reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True)
+        )
+        return
+
+    # --- Дальнейшие действия после анкеты ---
     state = users[user_id]["state"]
     logger.info(f"User {user_id} state: {state}, message: {text}")
 
@@ -83,6 +120,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         users[user_id]["state"] = "choosing_theme"
         await update.message.reply_text("Выберите тему:", reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
         return
+
+    # … дальше — остальная логика (выбор темы, подкатегории и т.д.)
 
     if state == "choosing_theme" and text in topics:
         users[user_id]["theme"] = text
