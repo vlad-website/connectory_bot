@@ -25,7 +25,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-users = {}
 # --- Состояния анкеты ---
 STATE_NICKNAME = "nickname"
 STATE_GENDER = "gender"
