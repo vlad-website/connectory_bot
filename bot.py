@@ -365,7 +365,12 @@ async def on_startup(app):
         print("❌ BOT_TOKEN или WEBHOOK_URL не заданы")
         return
 
-    await init_db()  # ← инициализация базы
+    print("🔧 [on_startup] Перед вызовом init_db()")
+    try:
+        await init_db()
+        print("✅ [on_startup] База данных инициализирована")
+    except Exception as e:
+        print(f"❌ [on_startup] Ошибка инициализации базы: {e}")
 
     await application.initialize()
     print(f"✅ Устанавливаю webhook: {webhook_url}")
