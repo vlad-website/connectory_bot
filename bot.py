@@ -323,7 +323,11 @@ async def handle_webhook(request):
     try:
         print("Получен webhook!")
         data = await request.json()
-        await application.update_queue.put(Update.de_json(data, application.bot))
+        
+        update = Update.de_json(data, application.bot)
+        await application.update_queue.put(update)
+        
+        
         return web.Response(text="ok")
     except Exception as e:
         print(f"Ошибка при обработке webhook: {e}")
