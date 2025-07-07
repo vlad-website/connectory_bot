@@ -320,9 +320,28 @@ async def handle_webhook(request):
         await application.process_update(update)
         return web.Response(text="ok")
     except Exception as e:
-        # Логируем ошибку, чтобы понять причину 500-й ошибки
         print(f"Ошибка при обработке webhook: {e}")
         return web.Response(status=500, text="error")
+
+# --- Инициализация базы данных ---
+import asyncpg
+from dotenv import load_dotenv
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+async def init_db():
+    conn = await asyncpg.connect(DATABASE_URL)
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            telegram_id BIGINT UNIQUE NOT NULL,
+            nickname TEXT NOT NULL,
+            gender TEXT,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    await conn.close()
 
 async def on_startup(app):
     token = os.getenv("BOT_TOKEN")
@@ -331,9 +350,11 @@ async def on_startup(app):
     if not token or not webhook_url:
         print("❌ BOT_TOKEN или WEBHOOK_URL не заданы")
         return
-        
-    await application.initialize()
 
+    # Инициализируем БД
+    await init_db()
+
+    await application.initialize()
     print(f"✅ Устанавливаю webhook: {webhook_url}")
     await application.bot.set_webhook(webhook_url)
 
