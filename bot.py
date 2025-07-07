@@ -126,8 +126,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_state(user_id, "choosing_theme")
         await update.message.reply_text("Выберите тему:", reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
         return
-    user_id = update.effective_user.id
-    text = update.message.text
 
     # … дальше — остальная логика (выбор темы, подкатегории и т.д.)
 
