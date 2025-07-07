@@ -330,24 +330,6 @@ async def handle_webhook(request):
         return web.Response(status=500, text="error")
 
 # --- Инициализация базы данных ---
-import asyncpg
-from dotenv import load_dotenv
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-async def init_db():
-    conn = await asyncpg.connect(DATABASE_URL)
-    await conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            telegram_id BIGINT UNIQUE NOT NULL,
-            nickname TEXT NOT NULL,
-            gender TEXT,
-            created_at TIMESTAMP DEFAULT NOW()
-        )
-    """)
-    await conn.close()
 
 from db import init_db
 
