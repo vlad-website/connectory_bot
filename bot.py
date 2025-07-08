@@ -334,6 +334,22 @@ async def handle_webhook(request):
     return web.Response()
 
 
+
+
+
+async def on_startup(app):
+    await application.initialize()
+    await init_db()
+    webhook_url = os.getenv("WEBHOOK_URL")
+    if not webhook_url:
+        print("❌ WEBHOOK_URL не задан")
+        return
+    await application.bot.set_webhook(webhook_url)
+    await application.start()  # Обязательно
+
+
+
+
 def main():
     asyncio.run(init_db())
     application.add_handler(CommandHandler("start", start))
