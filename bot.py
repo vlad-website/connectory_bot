@@ -332,6 +332,8 @@ async def handle_webhook(request):
 async def health(request):
     return web.Response(text="OK")
 
+from db import init_db 
+
 async def on_startup(app):
     await application.initialize()  # ❗️обязательно
     webhook_url = os.getenv("WEBHOOK_URL")
