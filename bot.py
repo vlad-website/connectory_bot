@@ -337,7 +337,7 @@ async def health(request):
 from db import init_db 
 
 async def on_startup(app):
-    await application.initialize()  # ❗️обязательно
+    await application.initialize()
     print("📡 [on_startup] запускаю init_db()")
     await init_db()
     webhook_url = os.getenv("WEBHOOK_URL")
