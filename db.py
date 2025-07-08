@@ -13,14 +13,19 @@ async def init_db():
         print("✅ Подключено к БД")
 
         async with pool.acquire() as conn:
-            await conn.execute("""CREATE TABLE IF NOT EXISTS users (
-                user_id BIGINT PRIMARY KEY,
-                nickname TEXT,
-                gender TEXT,
-                state TEXT,
-                language TEXT DEFAULT 'ru',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )""")
+            # Добавляем поля theme и sub для выбора темы и подкатегории
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    user_id BIGINT PRIMARY KEY,
+                    nickname TEXT,
+                    gender TEXT,
+                    state TEXT,
+                    language TEXT DEFAULT 'ru',
+                    theme TEXT,
+                    sub TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
         print("✅ Таблица users проверена/создана")
 
     except Exception as e:
@@ -49,3 +54,11 @@ async def update_user_nickname(user_id, nickname):
 async def update_user_gender(user_id, gender):
     async with pool.acquire() as conn:
         await conn.execute("UPDATE users SET gender = $1 WHERE user_id = $2", gender, user_id)
+
+async def update_user_theme(user_id, theme):
+    async with pool.acquire() as conn:
+        await conn.execute("UPDATE users SET theme = $1 WHERE user_id = $2", theme, user_id)
+
+async def update_user_subcategory(user_id, sub):
+    async with pool.acquire() as conn:
+        await conn.execute("UPDATE users SET sub = $1 WHERE user_id = $2", sub, user_id)
