@@ -15,6 +15,8 @@ from telegram.ext import (
 )
 from aiohttp import web
 
+application: Application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
+
 # --- Константы и настройки ---
 ADMIN_ID = 491000185
 logging.basicConfig(
@@ -336,6 +338,8 @@ from db import init_db
 
 async def on_startup(app):
     await application.initialize()  # ❗️обязательно
+    print("📡 [on_startup] запускаю init_db()")
+    await init_db()
     webhook_url = os.getenv("WEBHOOK_URL")
     if not webhook_url:
         print("❌ WEBHOOK_URL не задан")
@@ -344,7 +348,6 @@ async def on_startup(app):
     await application.bot.set_webhook(webhook_url)
 
 # --- Запуск ---
-application: Application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
