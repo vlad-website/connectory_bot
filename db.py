@@ -7,18 +7,24 @@ pool = None
 
 async def init_db():
     global pool
-    pool = await asyncpg.create_pool(DB_URL)
-    async with pool.acquire() as conn:
-        await conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
+    print("📡 Подключение к БД...")
+    try:
+        pool = await asyncpg.create_pool(DB_URL)
+        print("✅ Подключено к БД")
+
+        async with pool.acquire() as conn:
+            await conn.execute("""CREATE TABLE IF NOT EXISTS users (
                 user_id BIGINT PRIMARY KEY,
                 nickname TEXT,
                 gender TEXT,
                 state TEXT,
                 language TEXT DEFAULT 'ru',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+            )""")
+        print("✅ Таблица users проверена/создана")
+
+    except Exception as e:
+        print(f"❌ Ошибка при подключении к БД: {e}")
 
 async def get_user(user_id):
     async with pool.acquire() as conn:
