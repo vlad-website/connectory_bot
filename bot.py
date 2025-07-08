@@ -322,6 +322,7 @@ async def health(request):
 
 # --- Webhook + Web App ---
 async def handle_webhook(request):
+    print("📨 Получен webhook")
     try:
         data = await request.json()
         update = Update.de_json(data, application.bot)
