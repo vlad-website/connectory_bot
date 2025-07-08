@@ -352,5 +352,5 @@ web_app.router.add_get("/health", health)
 web_app.on_startup.append(on_startup)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 10000))
     web.run_app(web_app, port=port)
