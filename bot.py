@@ -1,9 +1,7 @@
-import os
 import logging
-import asyncio
+import os
 import json
-from aiohttp import web
-
+import asyncio
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -13,8 +11,8 @@ from telegram.ext import (
     filters,
 )
 
-from db import init_db, get_user, create_user, update_user_state, update_user_nickname, update_user_gender
-
+# --- Константы и настройки ---
+ADMIN_ID = 491000185
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
@@ -23,16 +21,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-PORT = int(os.getenv("PORT", 8080))
-
-application = ApplicationBuilder().token(BOT_TOKEN).build()
-
-# --- Состояния анкеты ---
-STATE_NICKNAME = "nickname"
-STATE_GENDER = "gender"
-
+# --- Данные пользователей и состояния ---
+users = {}
 waiting_queue = asyncio.Queue()
 active_chats = {}
 waiting_events = {}
@@ -48,9 +38,6 @@ topics = {
 for t in topics:
     topics[t].append("Любая подкатегория")
 
-# Хранение состояния в памяти (в идеале заменить на БД)
-users = {}
-
 # --- Клавиатуры ---
 def keyboard_main_menu():
     return ReplyKeyboardMarkup([["🔍 Найти собеседника"], ["❌ Завершить диалог"], ["🏠 Главное меню"]], resize_keyboard=True)
@@ -64,95 +51,45 @@ def keyboard_searching():
 def keyboard_dialog():
     return ReplyKeyboardMarkup([["Найти нового собеседника"], ["❌ Завершить диалог"]], resize_keyboard=True)
 
-# --- Хендлеры ---
+# --- Обработчики ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    user = await get_user(user_id)
+    users[user_id] = {"state": "choosing_theme"}
+    logger.info(f"User {user_id} started bot.")
 
-    if user:
-        users[user_id] = dict(user)  # синхронизируем с памятью
-        nickname = user.get("nickname") or "друг"
-        await update.message.reply_text(
-            f"👋 С возвращением, {nickname}!",
-            reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True)
-        )
-    else:
-        await create_user(user_id)
-        await update_user_state(user_id, STATE_NICKNAME)
-        users[user_id] = {"state": STATE_NICKNAME}
-        await update.message.reply_text(
-            "👋 Привет! Я бот для знакомств и общения по интересам.\n"
-            "Введи свой ник (имя, по которому тебя увидит собеседник):"
-        )
+    msg = "👋 Привет! Я бот для знакомств и общения по интересам.\n"
+        "Выбирай тему и подкатегорию — я найду тебе подходящего собеседника!\n"
+        "Выбери тему для общения:"
+    "Выбирай тему и подкатегорию — я найду тебе подходящего собеседника!\n"
+    "Выбери тему для общения:"
+    await update.message.reply_text(msg, reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    text = update.message.text.strip()
+    text = update.message.text
 
-    user = users.get(user_id)
-    if not user:
-        user_db = await get_user(user_id)
-        if user_db:
-            users[user_id] = dict(user_db)
-            user = users[user_id]
-        else:
-            await create_user(user_id)
-            await update_user_state(user_id, STATE_NICKNAME)
-            users[user_id] = {"state": STATE_NICKNAME}
-            await update.message.reply_text("👋 Привет! Введи свой ник:")
-            return
+    if user_id not in users:
+        users[user_id] = {"state": "choosing_theme"}
 
-    state = user.get("state", "")
+    state = users[user_id]["state"]
     logger.info(f"User {user_id} state: {state}, message: {text}")
 
-    # Анкета: никнейм
-    if state == STATE_NICKNAME:
-        await update_user_nickname(user_id, text[:32])
-        await update_user_state(user_id, STATE_GENDER)
-        user["state"] = STATE_GENDER
-        await update.message.reply_text(
-            f"Спасибо, {text[:32]}! Теперь выбери свой пол:",
-            reply_markup=ReplyKeyboardMarkup(
-                [["Мужской"], ["Женский"], ["Не указывать"]],
-                resize_keyboard=True,
-                one_time_keyboard=True
-            )
-        )
-        return
-
-    # Анкета: пол
-    if state == STATE_GENDER:
-        if text not in ["Мужской", "Женский", "Не указывать"]:
-            await update.message.reply_text("Пожалуйста, выбери пол из предложенных вариантов.")
-            return
-        await update_user_gender(user_id, text)
-        await update_user_state(user_id, "choosing_theme")
-        user["state"] = "choosing_theme"
-        await update.message.reply_text(
-            "✅ Готово! Теперь выбери тему для общения:",
-            reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True)
-        )
-        return
-
     if text == "🏠 Главное меню":
-        await update_user_state(user_id, "choosing_theme")
-        user["state"] = "choosing_theme"
+        users[user_id]["state"] = "choosing_theme"
         await update.message.reply_text("Выберите тему:", reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
         return
 
     if state == "choosing_theme" and text in topics:
-        user["theme"] = text
-        user["state"] = "choosing_sub"
-        await update_user_state(user_id, "choosing_sub")
+        users[user_id]["theme"] = text
+        users[user_id]["state"] = "choosing_sub"
         await update.message.reply_text("Выберите подкатегорию:", reply_markup=keyboard_subcategories(text))
         return
 
     if state == "choosing_sub":
-        theme = user.get("theme")
-        if text in topics.get(theme, []):
-            user["sub"] = text
-            user["state"] = "menu"
-            await update_user_state(user_id, "menu")
+        theme = users[user_id]["theme"]
+        if text in topics[theme]:
+            users[user_id]["sub"] = text
+            users[user_id]["state"] = "menu"
             increment_stats(theme, text)
             await update.message.reply_text(f"Вы выбрали: {theme} / {text}", reply_markup=keyboard_main_menu())
         else:
@@ -191,32 +128,26 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Выберите тему или нажмите «🏠 Главное меню».")
 
-# --- Поиск собеседника ---
+# --- Логика поиска ---
 async def start_searching(update, context, user_id):
-    user = users.get(user_id)
-    if not user:
-        await update.message.reply_text("Ошибка, пользователь не найден.")
-        return
-
-    if user.get("state") in ["searching", "chatting"]:
+    if users[user_id].get("state") in ["searching", "chatting"]:
         await update.message.reply_text("Вы уже ищете или в диалоге.")
         return
 
-    theme = user.get("theme")
-    sub = user.get("sub")
+    theme = users[user_id].get("theme")
+    sub = users[user_id].get("sub")
 
     if not theme or not sub:
         await update.message.reply_text("Сначала выберите тему и подкатегорию.")
         return
 
-    user["state"] = "searching"
-    await update_user_state(user_id, "searching")
+    users[user_id]["state"] = "searching"
     await waiting_queue.put(user_id)
 
-    asyncio.create_task(search_partner_background(context, user_id))
+    asyncio.create_task(search_partner_background(update, context, user_id))  # <-- Асинхронная фоновая задача
     await update.message.reply_text("Поиск собеседника...", reply_markup=keyboard_searching())
 
-async def search_partner_background(context, user_id):
+async def search_partner_background(update, context, user_id):
     waiting_events[user_id] = asyncio.Event()
     await try_match_partner(user_id, context)
 
@@ -224,135 +155,142 @@ async def search_partner_background(context, user_id):
         await asyncio.wait_for(waiting_events[user_id].wait(), timeout=60)
     except asyncio.TimeoutError:
         await remove_from_queue(user_id)
-        user = users.get(user_id)
-        if user and user.get("state") == "searching":
-            user["state"] = "menu"
-            await update_user_state(user_id, "menu")
+        if users.get(user_id, {}).get("state") == "searching":
+            users[user_id]["state"] = "menu"
             await context.bot.send_message(user_id, "Сейчас все заняты. Попробуйте позже.", reply_markup=keyboard_main_menu())
     finally:
         waiting_events.pop(user_id, None)
 
 async def try_match_partner(user_id, context):
-    user = users.get(user_id)
-    if not user or user.get("state") != "searching":
+    if users[user_id].get("state") != "searching":
         return
 
-    theme, sub = user.get("theme"), user.get("sub")
+    theme, sub = users[user_id]["theme"], users[user_id]["sub"]
+    temp = []
+    partner = None
 
-    # Пытаемся найти пару
-    candidates = []
-    for candidate_id in list(waiting_queue._queue):
-        if candidate_id == user_id:
+    for _ in range(waiting_queue.qsize()):
+        other = await waiting_queue.get()
+        if other == user_id:
+            temp.append(other)
             continue
-        c_user = users.get(candidate_id)
-        if not c_user or c_user.get("state") != "searching":
-            continue
-        if c_user.get("theme") == theme and c_user.get("sub") == sub:
-            candidates.append(candidate_id)
 
-    if candidates:
-        partner_id = candidates[0]
+        if users.get(other) and users[other]["theme"] == theme:
+            sub1, sub2 = users[other]["sub"], sub
+            if "Любая подкатегория" in (sub1, sub2) or sub1 == sub2:
+                partner = other
+                break
+        temp.append(other)
+
+    for u in temp:
+        await waiting_queue.put(u)
+
+    if partner:
         await remove_from_queue(user_id)
-        await remove_from_queue(partner_id)
+        await remove_from_queue(partner)
+        await start_chat(context.bot, user_id, partner)
 
-        # Устанавливаем чат
-        active_chats[user_id] = partner_id
-        active_chats[partner_id] = user_id
+async def start_chat(bot, user1, user2):
+    for uid in (user1, user2):
+        users[uid]["state"] = "chatting"
 
-        users[user_id]["state"] = "chatting"
-        users[partner_id]["state"] = "chatting"
+    active_chats[user1] = user2
+    active_chats[user2] = user1
 
-        await update_user_state(user_id, "chatting")
-        await update_user_state(partner_id, "chatting")
+    theme = users[user1]["theme"]
+    sub1 = users[user1]["sub"]
+    sub2 = users[user2]["sub"]
 
-        await context.bot.send_message(user_id, "✅ Партнёр найден! Начинайте общение.\nЧтобы закончить диалог — нажмите ❌ Завершить диалог.", reply_markup=keyboard_dialog())
-        await context.bot.send_message(partner_id, "✅ Партнёр найден! Начинайте общение.\nЧтобы закончить диалог — нажмите ❌ Завершить диалог.", reply_markup=keyboard_dialog())
+    sub_display = sub2 if sub1 == "Любая подкатегория" else sub1 if sub2 == "Любая подкатегория" else sub1
 
-        # Сигналим ожидающему
-        if waiting_events.get(user_id):
-            waiting_events[user_id].set()
-        if waiting_events.get(partner_id):
-            waiting_events[partner_id].set()
+    for uid in (user1, user2):
+        await bot.send_message(uid, f"Вы подключены. Тема: {theme}\nПодкатегория: {sub_display}", reply_markup=keyboard_dialog())
 
-async def remove_from_queue(user_id):
-    try:
-        # Очистка из очереди
-        new_queue = asyncio.Queue()
-        while not waiting_queue.empty():
-            uid = await waiting_queue.get()
-            if uid != user_id:
-                await new_queue.put(uid)
-        while not new_queue.empty():
-            uid = await new_queue.get()
-            await waiting_queue.put(uid)
-    except Exception as e:
-        logger.error(f"Ошибка при удалении из очереди {user_id}: {e}")
+    for uid in (user1, user2):
+        if uid in waiting_events:
+            waiting_events[uid].set()
 
 async def cancel_search(update, context, user_id):
-    await remove_from_queue(user_id)
-    user = users.get(user_id)
-    if user:
-        user["state"] = "menu"
-        await update_user_state(user_id, "menu")
-    await update.message.reply_text("Поиск отменён.", reply_markup=keyboard_main_menu())
+    if users[user_id]["state"] == "searching":
+        users[user_id]["state"] = "menu"
+        await remove_from_queue(user_id)
+        if user_id in waiting_events:
+            waiting_events[user_id].set()
+        await update.message.reply_text("Поиск отменён.", reply_markup=keyboard_main_menu())
 
 async def end_dialog(update, context, user_id):
-    partner_id = active_chats.pop(user_id, None)
-    if partner_id:
-        active_chats.pop(partner_id, None)
-        partner = users.get(partner_id)
-        if partner:
-            partner["state"] = "menu"
-            await update_user_state(partner_id, "menu")
-            await context.bot.send_message(partner_id, "Диалог завершён партнёром.", reply_markup=keyboard_main_menu())
-    user = users.get(user_id)
-    if user:
-        user["state"] = "menu"
-        await update_user_state(user_id, "menu")
+    if users[user_id]["state"] != "chatting":
+        await update.message.reply_text("Вы не в диалоге.")
+        return
+
+    partner = active_chats.pop(user_id, None)
+    users[user_id]["state"] = "menu"
+
+    if partner:
+        active_chats.pop(partner, None)
+        users[partner]["state"] = "menu"
+        await context.bot.send_message(partner, "Собеседник завершил диалог.", reply_markup=keyboard_main_menu())
+
     await update.message.reply_text("Диалог завершён.", reply_markup=keyboard_main_menu())
 
-# --- Статистика (простейшая) ---
-stats = {}
+async def remove_from_queue(user_id):
+    temp = []
+    removed = False
+    while not waiting_queue.empty():
+        u = await waiting_queue.get()
+        if u != user_id:
+            temp.append(u)
+        else:
+            removed = True
+    for u in temp:
+        await waiting_queue.put(u)
+    return removed
 
+# --- Статистика ---
 def increment_stats(theme, sub):
-    key = f"{theme} / {sub}"
-    stats[key] = stats.get(key, 0) + 1
+    stats = {}
+    if os.path.exists("stats.json"):
+        with open("stats.json", "r", encoding="utf-8") as f:
+            stats = json.load(f)
 
-# --- Обработчик вебхука ---
+    stats.setdefault(theme, {})
+    stats[theme][sub] = stats[theme].get(sub, 0) + 1
+
+    with open("stats.json", "w", encoding="utf-8") as f:
+        json.dump(stats, f, ensure_ascii=False, indent=2)
+
+# --- Запуск бота ---
+from aiohttp import web
+from telegram.ext import Application
+
 async def handle_webhook(request):
-    try:
-        data = await request.json()
-        update = Update.de_json(data, application.bot)
-        await application.process_update(update)
-        return web.Response(text="ok")
-    except Exception as e:
-        logger.error(f"Webhook error: {e}", exc_info=True)
-        return web.Response(status=500, text="error")
+    data = await request.json()
+    update = Update.de_json(data, application.bot)
+    await application.process_update(update)
+    return web.Response()
 
-# --- Запуск ---
 async def on_startup(app):
-    await application.initialize()
-    await init_db()
-    await application.start()
+    token = os.getenv("BOT_TOKEN")
+    if not token:
+        print("Ошибка: переменная BOT_TOKEN не задана.")
+        return
 
-    if WEBHOOK_URL:
-        await application.bot.set_webhook(WEBHOOK_URL)
-        logger.info(f"Webhook установлен: {WEBHOOK_URL}")
-    else:
-        logger.error("WEBHOOK_URL не задан в окружении")
+    webhook_url = os.getenv("WEBHOOK_URL")
+    if not webhook_url:
+        print("Ошибка: переменная WEBHOOK_URL не задана.")
+        return
 
-async def on_cleanup(app):
-    await application.stop()
+    await application.bot.set_webhook(webhook_url)
 
-# Добавляем хендлеры
+# Собираем приложение
+application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
-# aiohttp сервер
-app = web.Application()
-app.router.add_post(f"/{BOT_TOKEN}", handle_webhook)
-app.on_startup.append(on_startup)
-app.on_cleanup.append(on_cleanup)
+# aiohttp-приложение
+web_app = web.Application()
+web_app.router.add_post("/", handle_webhook)
+web_app.on_startup.append(on_startup)
 
 if __name__ == "__main__":
-    web.run_app(app, port=PORT)
+    web.run_app(web_app, port=int(os.environ.get("PORT", 8080)))
