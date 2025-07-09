@@ -74,3 +74,29 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=user["companion_id"], text=text)
     else:
         await update.message.reply_text("❌ Что-то пошло не так. Напиши /start.")
+
+
+
+
+ if text == "Завершить диалог":
+        await end_dialog(user_id, context)
+        return
+
+    elif text == "Главное меню":
+        await update_user_state(user_id, "theme")
+        keyboard = [[t] for t in TOPICS.keys()]
+        await update.message.reply_text(
+            "Выбери интересующую тему:",
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        )
+        return
+
+    elif text == "Поддержать проект ❤️":
+        await update.message.reply_text(
+            "🙏 Спасибо за желание поддержать проект!\n(Заглушка, здесь может быть ссылка на донат 💸)"
+        )
+        return
+
+
+
+
