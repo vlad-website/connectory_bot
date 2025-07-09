@@ -6,6 +6,8 @@ from db.user_queries import get_user, create_user, update_user_state
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
+    logger.info(f"🚀 /start received from {user_id}")
+    
     user = await get_user(user_id)
 
     if user:
