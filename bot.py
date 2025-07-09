@@ -60,4 +60,5 @@ app.on_startup.append(on_startup)
 app.on_cleanup.append(on_cleanup)
 
 if __name__ == "__main__":
-    web.run_app(app, port=PORT)
+   # web.run_app(app, port=PORT)
+    await application.run_polling()
