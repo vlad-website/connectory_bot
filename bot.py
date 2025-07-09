@@ -57,11 +57,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users[user_id] = {"state": "choosing_theme"}
     logger.info(f"User {user_id} started bot.")
 
-    msg = (
-        "👋 Привет! Я бот для знакомств и общения по интересам.\n"
-        "Выбирай тему и подкатегорию — я найду тебе подходящего собеседника!\n"
-        "Выбери тему для общения:"
-    )
+    msg = "👋 Привет! Я бот для общения по интересам. Выбери тему:"
     await update.message.reply_text(msg, reply_markup=ReplyKeyboardMarkup([[k] for k in topics], resize_keyboard=True))
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -161,30 +157,6 @@ async def search_partner_background(update, context, user_id):
     finally:
         waiting_events.pop(user_id, None)
 
-async def try_match_partner(user_id, context):
-    if users[user_id].get("state") != "searching":
-        return
-
-    theme, sub = users[user_id]["theme"], users[user_id]["sub"]
-    temp = []
-    partner = None
-
-    for _ in range(waiting_queue.qsize()):
-        other = await waiting_queue.get()
-        if other == user_id:
-            temp.append(other)
-            continue
-
-        if users.get(other) and users[other]["theme"] == theme:
-            sub1, sub2 = users[other]["sub"], sub
-            if "Любая подкатегория" in (sub1, sub2) or sub1 == sub2:
-                partner = other
-                break
-        temp.append(other)
-
-    for u in temp:
-        await waiting_queue.put(u)
-
     if partner:
         await remove_from_queue(user_id)
         await remove_from_queue(partner)
@@ -260,37 +232,18 @@ def increment_stats(theme, sub):
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
 # --- Запуск бота ---
-from aiohttp import web
-from telegram.ext import Application
-
-async def handle_webhook(request):
-    data = await request.json()
-    update = Update.de_json(data, application.bot)
-    await application.process_update(update)
-    return web.Response()
-
-async def on_startup(app):
+def main():
     token = os.getenv("BOT_TOKEN")
     if not token:
         print("Ошибка: переменная BOT_TOKEN не задана.")
         return
 
-    webhook_url = os.getenv("WEBHOOK_URL")
-    if not webhook_url:
-        print("Ошибка: переменная WEBHOOK_URL не задана.")
-        return
+    app = ApplicationBuilder().token(token).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
-    await application.bot.set_webhook(webhook_url)
-
-# Собираем приложение
-application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
-application.add_handler(CommandHandler("start", start))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-
-# aiohttp-приложение
-web_app = web.Application()
-web_app.router.add_post("/", handle_webhook)
-web_app.on_startup.append(on_startup)
+    logger.info("Бот запущен")
+    app.run_polling()
 
 if __name__ == "__main__":
-    web.run_app(web_app, port=int(os.environ.get("PORT", 8080)))
+    main()
