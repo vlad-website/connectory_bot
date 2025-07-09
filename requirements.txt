@@ -1,4 +1,4 @@
-python-telegram-bot==21.1
+aiogram
+python-telegram-bot[asyncio]>=20.0
 asyncpg
-python-dotenv
-aiohttp>=3.8.0
+aiohttp
