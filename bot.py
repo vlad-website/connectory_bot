@@ -59,5 +59,11 @@ app.router.add_post("/webhook", handle_webhook)
 app.on_startup.append(on_startup)
 app.on_cleanup.append(on_cleanup)
 
+
+
+
+
+import asyncio
+
 if __name__ == "__main__":
-    await application.run_polling()
+    asyncio.run(application.run_polling())
