@@ -1,61 +1,76 @@
-# Update: handlers/messages.py
-# -------------------------
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
-from db.user_queries import (
-    get_user, update_user_nickname, update_user_gender,
-    update_user_theme, update_user_state
-)
-from core.matchmaking import add_to_queue, find_match, get_partner, end_chat
+from db.user_queries import update_user_theme, update_user_sub, update_user_state
+from core.topics import TOPICS
+from db.user_queries import get_user
+from core.matchmaking import add_to_queue, is_in_chat
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user = await get_user(user_id)
+    text = update.message.text.strip()
+
     if not user:
-        await update.message.reply_text("Пожалуйста, нажмите /start")
+        await update.message.reply_text("Пожалуйста, отправьте /start.")
         return
 
-    state = user['state']
-    msg = update.message.text.strip()
+    state = user["state"]
 
     if state == "nickname":
-        await update_user_nickname(user_id, msg)
+        await update_user_nickname(user_id, text)
         await update_user_state(user_id, "gender")
-        await update.message.reply_text("Ты парень или девушка?", reply_markup=ReplyKeyboardMarkup([["Парень", "Девушка"]], resize_keyboard=True))
+        await update.message.reply_text("Укажи свой пол (М/Ж):")
 
     elif state == "gender":
-        if msg.lower() not in ["парень", "девушка"]:
-            await update.message.reply_text("Пожалуйста, выбери: Парень или Девушка")
+        if text.lower() in ("м", "муж", "мужской"):
+            gender = "М"
+        elif text.lower() in ("ж", "жен", "женский"):
+            gender = "Ж"
+        else:
+            await update.message.reply_text("Пожалуйста, укажи пол — М или Ж:")
             return
-        await update_user_gender(user_id, msg.lower())
+        await update_user_gender(user_id, gender)
         await update_user_state(user_id, "theme")
-        await update.message.reply_text("О чём хочешь пообщаться? (например, кино, игры, спорт)", reply_markup=ReplyKeyboardRemove())
+
+        # Выбор темы
+        keyboard = [[t] for t in TOPICS.keys()]
+        await update.message.reply_text(
+            "Выбери интересующую тебя тему:",
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        )
 
     elif state == "theme":
-        await update_user_theme(user_id, msg.lower())
-        await update.message.reply_text("🔍 Ищу собеседника...")
-        partner_id = await find_match(user_id, msg.lower())
+        if text not in TOPICS:
+            await update.message.reply_text("Пожалуйста, выбери тему из списка.")
+            return
+        await update_user_theme(user_id, text)
+        await update_user_state(user_id, "sub")
 
-        if partner_id:
-            partner = await get_user(partner_id)
-            await update_user_state(user_id, "chatting")
-            await update_user_state(partner_id, "chatting")
+        # Подтемы + "любая"
+        subtopics = TOPICS[text] + ["Любая подтема"]
+        keyboard = [[s] for s in subtopics]
+        await update.message.reply_text(
+            "Теперь выбери подтему:",
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        )
 
-            await context.bot.send_message(chat_id=user_id, text=f"💬 Найден собеседник: {partner['nickname']}, начинай общение!")
-            await context.bot.send_message(chat_id=partner_id, text=f"💬 Найден собеседник: {user['nickname']}, начинай общение!")
-        else:
-            await add_to_queue(user_id, msg.lower())
+    elif state == "sub":
+        theme = user["theme"]
+        valid_subs = TOPICS.get(theme, []) + ["Любая подтема"]
+        if text not in valid_subs:
+            await update.message.reply_text("Выбери подтему из списка.")
+            return
+        await update_user_sub(user_id, text)
+        await update_user_state(user_id, "searching")
+        await update.message.reply_text("🔎 Ищу собеседника...")
 
-    elif state == "chatting":
-        partner_id = await get_partner(user_id)
-        if partner_id:
-            await context.bot.send_message(chat_id=partner_id, text=msg)
-        else:
-            await update.message.reply_text("😕 Собеседник отключился. Нажмите /start, чтобы найти нового.")
+        await add_to_queue(user_id, theme, text)
 
-    elif msg.lower() == "начать":
-        await update_user_state(user_id, "theme")
-        await update.message.reply_text("О чём хочешь поговорить?")
+    elif state == "searching":
+        await update.message.reply_text("⏳ Поиск собеседника...")
 
+    elif await is_in_chat(user_id):
+        # Уже в чате — просто пересылай
+        await context.bot.send_message(chat_id=user["companion_id"], text=text)
     else:
-        await update.message.reply_text("Не понял. Попробуй ещё раз или нажми /start")
+        await update.message.reply_text("❌ Что-то пошло не так. Напиши /start.")
