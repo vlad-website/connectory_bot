@@ -37,3 +37,17 @@ async def update_user_sub(user_id, sub):
     async with pool.acquire() as conn:
         await conn.execute("UPDATE users SET sub = $1 WHERE id = $2", sub, user_id)
 
+
+
+
+
+
+async def update_user_companion(user_id, companion_id):
+    pool = await get_db()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS companion_id BIGINT;"
+        )
+        await conn.execute(
+            "UPDATE users SET companion_id = $1 WHERE id = $2", companion_id, user_id
+        )
