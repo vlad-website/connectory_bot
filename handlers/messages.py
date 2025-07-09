@@ -78,8 +78,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-
- if text == "Завершить диалог":
+    if text == "Завершить диалог":
         await end_dialog(user_id, context)
         return
 
