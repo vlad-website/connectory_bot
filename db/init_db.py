@@ -1,8 +1,6 @@
-# Folder: db/init_db.py
-# -------------------------
 import asyncpg
-from config import DATABASE_URL
 import logging
+from config import DATABASE_URL
 
 logger = logging.getLogger(__name__)
 pool = None
@@ -11,6 +9,7 @@ async def init_db():
     global pool
     try:
         pool = await asyncpg.create_pool(DATABASE_URL)
+
         async with pool.acquire() as conn:
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS users (
@@ -19,14 +18,23 @@ async def init_db():
                     gender TEXT,
                     state TEXT,
                     theme TEXT,
-                    sub TEXT
+                    sub TEXT,
+                    companion_id BIGINT
                 );
             """)
-        logger.info("✅ DB initialized")
+
+            # На случай, если какие-то поля не добавились ранее — добавим безопасно
+            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS companion_id BIGINT;")
+            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS nickname TEXT;")
+            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS gender TEXT;")
+            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS state TEXT;")
+            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS theme TEXT;")
+            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS sub TEXT;")
+
+        logger.info("✅ Database initialized")
     except Exception as e:
-        logger.exception("❌ DB init failed: %s", e)
+        logger.exception("❌ Failed to initialize database")
 
 async def get_db():
     global pool
     return pool
-
