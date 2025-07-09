@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 
 application = ApplicationBuilder().token(BOT_TOKEN).build()
 
+PORT = int(os.environ.get("PORT", "10000"))
+
 # Add handlers
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
