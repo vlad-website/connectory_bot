@@ -24,7 +24,7 @@ application = ApplicationBuilder().token(BOT_TOKEN).build()
 
 PORT = int(os.environ.get("PORT", "10000"))
 
-# Add handlers
+
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
@@ -32,8 +32,11 @@ async def handle_webhook(request):
     from telegram import Update
     try:
         data = await request.json()
-        logger.info(f"Webhook received data: {data}")
+        logger.info(f"📩 Webhook received raw: {data}")
+        
         update = Update.de_json(data, application.bot)
+        logger.info(f"🔄 Parsed update: {update}")
+        
         await application.process_update(update)
         return web.Response(text="ok")
     except Exception as e:
