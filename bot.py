@@ -32,6 +32,7 @@ async def handle_webhook(request):
     from telegram import Update
     try:
         data = await request.json()
+        logger.info(f"Webhook received data: {data}")
         update = Update.de_json(data, application.bot)
         await application.process_update(update)
         return web.Response(text="ok")
