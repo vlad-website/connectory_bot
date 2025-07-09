@@ -4,6 +4,7 @@ from db.user_queries import update_user_theme, update_user_sub, update_user_stat
 from core.topics import TOPICS
 from db.user_queries import get_user
 from core.matchmaking import add_to_queue, is_in_chat
+from core.chat_control import end_dialog
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
