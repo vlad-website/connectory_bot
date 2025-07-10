@@ -5,7 +5,8 @@ from db.init_db import get_db
 async def get_user(user_id):
     pool = await get_db()
     async with pool.acquire() as conn:
-        return await conn.fetchrow("SELECT * FROM users WHERE id = $1", user_id)
+        row = await conn.fetchrow("SELECT * FROM users WHERE id = $1", user_id)
+        return dict(row) if row else None
 
 async def create_user(user_id):
     pool = await get_db()
