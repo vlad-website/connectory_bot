@@ -15,10 +15,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user = await get_user(user_id)
     logger.debug("get_user returned %s (%s)", user, type(user))
-    except Exception:
-        logger.exception("DB read failed")
-        await update.message.reply_text("⚠️ Ошибка БД. Попробуйте позже.")
-        return
+except Exception:
+    logger.exception("DB read failed")
+    await update.message.reply_text("⚠️ Ошибка БД. Попробуйте позже.")
+    return
 
     if user:
         nickname = user.get("nickname") or "друг"
