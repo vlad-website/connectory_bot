@@ -1,4 +1,4 @@
-echo "
+
 import asyncio
 import asyncpg
 import os
@@ -14,4 +14,4 @@ async def run():
         print('❌ DB ERROR:', e)
 
 asyncio.run(run())
-" > check_db.py
+
