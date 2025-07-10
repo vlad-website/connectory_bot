@@ -7,6 +7,7 @@ from core.matchmaking import add_to_queue, is_in_chat
 from core.chat_control import end_dialog
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("💬 MSG:", update.message.text)      # ← временно
     user_id = update.effective_user.id
     user = await get_user(user_id)
     text = update.message.text.strip()
