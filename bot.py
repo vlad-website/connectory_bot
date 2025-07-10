@@ -15,6 +15,19 @@ from handlers.commands import start
 from handlers.messages import message_handler
 
 logging.basicConfig(
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
+
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.DEBUG)  # ← чтобы всё лилось в stdout
+
+
+
+
+
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
     filename="bot.log",
