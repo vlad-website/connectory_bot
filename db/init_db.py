@@ -34,6 +34,7 @@ async def init_db():
 
         logger.info("✅ Database initialized")
     except Exception as e:
+        print("❌ EXCEPTION in init_db:", e, flush=True)
         logger.exception("❌ Failed to initialize database")
 
 async def get_db():
