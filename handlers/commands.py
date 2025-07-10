@@ -9,6 +9,7 @@ from db.user_queries import get_user, create_user, update_user_state
 logger = logging.getLogger(__name__)   # ← 2. создаём логгер
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("▶️  /start ENTERED")                # ← временный print
     user_id = update.effective_user.id
     logger.info(f"🚀 /start received from {user_id}")
     
