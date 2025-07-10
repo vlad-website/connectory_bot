@@ -21,14 +21,27 @@ logging.basicConfig(
     filemode="a"
 )
 
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
+# Настройка логирования
+logger = logging.getLogger("bot")  # создаем логгер с именем "bot"
+logger.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Формат для логов
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+# Логи в файл
+file_handler = logging.FileHandler("bot.log", mode="a")
+file_handler.setFormatter(formatter)
+
+# Логи в консоль
+console_handler = logging.StreamHandler()
 console_handler.setFormatter(formatter)
 
+# Подключаем хендлеры
+logger.addHandler(file_handler)
 logger.addHandler(console_handler)
-logger.setLevel(logging.DEBUG)  # ← чтобы всё лилось в stdout
+
+
+
 
 logger = logging.getLogger(__name__)
 
