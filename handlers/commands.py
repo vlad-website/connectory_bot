@@ -1,8 +1,12 @@
 # Folder: handlers/commands.py
 # -------------------------
+import logging                         # ← 1. импортируем logging
+
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.user_queries import get_user, create_user, update_user_state
+
+logger = logging.getLogger(__name__)   # ← 2. создаём логгер
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
