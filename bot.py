@@ -60,10 +60,5 @@ app.on_startup.append(on_startup)
 app.on_cleanup.append(on_cleanup)
 
 
-
-
-
-import asyncio
-
 if __name__ == "__main__":
-    asyncio.run(application.run_polling())
+    web.run_app(app, port=PORT)
