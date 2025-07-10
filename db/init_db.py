@@ -9,6 +9,7 @@ async def init_db():
     global pool
     try:
         pool = await asyncpg.create_pool(DATABASE_URL)
+        logger.info("DB pool = %s", pool)
 
         async with pool.acquire() as conn:
             await conn.execute("""
