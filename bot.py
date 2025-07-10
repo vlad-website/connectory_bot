@@ -5,6 +5,8 @@
 # -------------------------
 import os
 import logging
+import traceback   # добавлено
+
 from aiohttp import web
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from config import BOT_TOKEN, WEBHOOK_URL, PORT
@@ -29,18 +31,33 @@ application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
 async def handle_webhook(request):
+    """
+    Получаем POST от Telegram, парсим в Update и передаём в PTB‑Application.
+    Логи:
+      • RAW JSON
+      • update_id, message text / callback data
+      • traceback при любой ошибке
+    """
     from telegram import Update
+
     try:
         data = await request.json()
-        logger.info(f"📩 Webhook received raw: {data}")
-        
+        logger.info("📨 RAW UPDATE: %s", data)
+
         update = Update.de_json(data, application.bot)
-        logger.info(f"🔄 Parsed update: {update}")
-        
+        # Короткая сводка в лог
+        summary = (
+            f"id={update.update_id} "
+            f"msg='{update.message.text if update.message else ''}' "
+            f"callback='{update.callback_query.data if update.callback_query else ''}'"
+        )
+        logger.info("🔄 Parsed update: %s", summary)
+
         await application.process_update(update)
         return web.Response(text="ok")
-    except Exception as e:
-        logger.error(f"Webhook error: {e}", exc_info=True)
+
+    except Exception:
+        logger.exception("❌ Webhook handler crashed:\n%s", traceback.format_exc())
         return web.Response(status=500, text="error")
 
 async def on_startup(app):
