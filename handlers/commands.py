@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)   # ← 2. создаём логгер
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("▶️  /start ENTERED")                # ← временный print
     user_id = update.effective_user.id
-    logger.info(f"🚀 /start ENTERED for user {user_id}")
     
     user = await get_user(user_id)
     logger.debug("get_user returned %s (%s)", user, type(user))
