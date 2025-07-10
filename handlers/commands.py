@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)   # ← 2. создаём логгер
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("▶️  /start ENTERED")                # ← временный print
     user_id = update.effective_user.id
-    logger.info(f"🚀 /start received from {user_id}")
+    logger.info(f"🚀 /start ENTERED for user {user_id}")
     
     user = await get_user(user_id)
 
@@ -27,4 +27,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "👋 Привет! Введи свой ник (имя, по которому тебя увидит собеседник):"
         )
+        
+    logger.info(f"✅ /start REPLIED for user {user_id}")
 
