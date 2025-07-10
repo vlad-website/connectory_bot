@@ -72,7 +72,7 @@ async def on_cleanup(app):
     await application.stop()
 
 app = web.Application()
-app.router.add_post("BOT_TOKEN", handle_webhook)
+app.router.add_post(f"/{BOT_TOKEN}", handle_webhook)
 app.on_startup.append(on_startup)
 app.on_cleanup.append(on_cleanup)
 
