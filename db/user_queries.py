@@ -10,6 +10,7 @@ async def _exec(sql: str, *args):
     pool = await get_db()
     async with pool.acquire() as conn:
         status = await conn.execute(sql, *args)
+    print(f"SQL: {sql}  ARGS: {args}  →  {status}", flush=True)
     return status
 
 # ---------- CRUD ----------
