@@ -56,9 +56,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-    gender = text            # уже нормальная форма
-    await update_user_gender(user_id, gender)
-    await update_user_state(user_id, "theme")
+        gender = text            # уже нормальная форма
+        await update_user_gender(user_id, gender)
+        await update_user_state(user_id, "theme")
 
         keyboard = [[t] for t in TOPICS.keys()]
         await update.message.reply_text(
