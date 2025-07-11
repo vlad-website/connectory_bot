@@ -47,14 +47,14 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ---------- ШАГ 2: Пол ----------
     elif state == "gender":
-    if text not in ("Мужской", "Женский", "Не важно"):
-        await update.message.reply_text(
-            "Пожалуйста, выбери пол:", 
-            reply_markup=ReplyKeyboardMarkup(
-                [["Мужской"], ["Женский"], ["Не важно"]], resize_keyboard=True
+        if text not in ("Мужской", "Женский", "Не важно"):
+            await update.message.reply_text(
+                "Пожалуйста, выбери пол:", 
+                reply_markup=ReplyKeyboardMarkup(
+                    [["Мужской"], ["Женский"], ["Не важно"]], resize_keyboard=True
+                )
             )
-        )
-        return
+            return
 
     gender = text            # уже нормальная форма
     await update_user_gender(user_id, gender)
