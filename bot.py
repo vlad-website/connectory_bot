@@ -3,7 +3,7 @@
 # -------------------------
 # File: bot.py (main entry)
 # -------------------------
-import os
+import os, sys
 import logging
 import traceback   # добавлено
 
@@ -14,9 +14,12 @@ from db.init_db import init_db
 from handlers.commands import start
 from handlers.messages import message_handler
 
+# гарантируем flush stdout
+os.environ["PYTHONUNBUFFERED"] = "1"
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
+    level=logging.DEBUG,                    # всё видно
     filename="bot.log",
     filemode="a"
 )
