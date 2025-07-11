@@ -26,6 +26,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     state = user["state"]
+    logger.debug("STATE=%s TEXT=%s", state, text)
 
     # ---------- ШАГ 1: Никнейм ----------
     if state == "nickname":
