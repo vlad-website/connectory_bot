@@ -37,21 +37,28 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # 3. переводим пользователя к выбору пола
         await update_user_state(user_id, "gender")
 
-        await update.message.reply_text("Укажи свой пол (М/Ж):")
+        await update.message.reply_text(
+            "Укажи свой пол:",
+            reply_markup=ReplyKeyboardMarkup(
+                [["Мужской"], ["Женский"], ["Не важно"]], resize_keyboard=True
+            )
+        )
         return                      # <– обязателен, чтобы не провалиться дальше
 
     # ---------- ШАГ 2: Пол ----------
     elif state == "gender":
-        if text.lower() in ("м", "муж", "мужской"):
-            gender = "М"
-        elif text.lower() in ("ж", "жен", "женский"):
-            gender = "Ж"
-        else:
-            await update.message.reply_text("Пожалуйста, укажи пол — М или Ж:")
-            return
+    if text not in ("Мужской", "Женский", "Не важно"):
+        await update.message.reply_text(
+            "Пожалуйста, выбери пол:", 
+            reply_markup=ReplyKeyboardMarkup(
+                [["Мужской"], ["Женский"], ["Не важно"]], resize_keyboard=True
+            )
+        )
+        return
 
-        await update_user_gender(user_id, gender)
-        await update_user_state(user_id, "theme")
+    gender = text            # уже нормальная форма
+    await update_user_gender(user_id, gender)
+    await update_user_state(user_id, "theme")
 
         keyboard = [[t] for t in TOPICS.keys()]
         await update.message.reply_text(
