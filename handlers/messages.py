@@ -20,7 +20,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if state == "nickname":
     # 1. сохраняем ник
-    await update_user_nickname(user_id, text)
+        await update_user_nickname(user_id, text)
 
     # 2. проверяем, что ник действительно записан
     user_after = await get_user(user_id)
