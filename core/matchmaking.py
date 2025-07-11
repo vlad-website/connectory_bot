@@ -1,7 +1,8 @@
 from db.user_queries import update_user_state, update_user_companion, get_user
 
 import asyncio
-from telegram import Bot, ReplyKeyboardMarkup
+from telegram import Bot
+from handlers.keyboards import kb_chat  
 
 active_search_tasks = {}
 
@@ -38,11 +39,11 @@ async def add_to_queue(user_id, theme, sub):
 
             await Bot.get_current().send_message(user_id,
                 f"🎉 Собеседник найден!\nТема: {theme}\nПодтема: {sub_a}",
-                reply_markup=keyboard
+                reply_markup=kb_chat()
             )
             await Bot.get_current().send_message(other_id,
                 f"🎉 Собеседник найден!\nТема: {theme}\nПодтема: {sub_b}",
-                reply_markup=keyboard
+                reply_markup=kb_chat()
             )
             return
 
