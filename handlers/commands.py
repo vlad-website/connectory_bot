@@ -2,7 +2,7 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 import logging, traceback
 from db.user_queries import (
-    get_user, create_user, update_user_state
+    get_user, create_user, update_user_state, update_user_nickname
 )
 
 logger = logging.getLogger(__name__)
