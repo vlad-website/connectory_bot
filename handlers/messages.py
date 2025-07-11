@@ -1,6 +1,8 @@
 # handlers/messages.py
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
+from handlers.keyboards import kb_after_sub, kb_searching, kb_chat
+
 import logging
 
 from db.user_queries import (
@@ -93,15 +95,47 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         await update_user_sub(user_id, text)
-        await update_user_state(user_id, "searching")
-        await update.message.reply_text("🔎 Ищу собеседника...")
-
-        await add_to_queue(user_id, theme, text)
+        await update_user_state(user_id, "menu")           # ← теперь 'menu'
+        await update.message.reply_text(
+            f"Вы выбрали: {theme} / {text}",
+            reply_markup=kb_after_sub()                    # ← меню после выбора
+        )
         return
+
+    # ---------- Новый блок ----------
+    elif state == "menu":
+        if text == "🔍 Начать поиск":
+            await update_user_state(user_id, "searching")
+            await update.message.reply_text("🔎 Ищу собеседника...", reply_markup=kb_searching())
+            await add_to_queue(user_id, user["theme"], user["sub"])
+            return
+
+        if text == "Изменить подтему":
+            await update_user_state(user_id, "sub")
+            subtopics = TOPICS[user["theme"]] + ["Любая подтема"]
+            await update.message.reply_text(
+                "Выберите подтему:",
+                reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
+            )
+            return
+
+        if text == "🏠 Главное меню":
+            await update_user_state(user_id, "theme")
+            keyboard = [[t] for t in TOPICS.keys()]
+            await update.message.reply_text(
+                "Выбери интересующую тему:",
+                reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            )
+            return
 
     # ---------- Поиск ----------
     elif state == "searching":
-        await update.message.reply_text("⏳ Поиск собеседника...")
+        if text == "⛔ Остановить поиск":
+            await remove_from_queue(user_id)
+            await update_user_state(user_id, "menu")
+            await update.message.reply_text("Поиск остановлен.", reply_markup=kb_after_sub())
+            return
+        await update.message.reply_text("⏳ Ищем собеседника...")
         return
 
     # ---------- Чат ----------
