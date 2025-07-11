@@ -20,20 +20,18 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if state == "nickname":
     # 1. сохраняем ник
-        await update_user_nickname(user_id, text)
+    await update_user_nickname(user_id, text)
 
-    # 2. проверяем, что записалось
-        user_after = await get_user(user_id)
-        logger.debug("After nickname update: %s", user_after)  # должен показать nickname != None
+    # 2. проверяем, что ник действительно записан
+    user_after = await get_user(user_id)
+    logger.debug("After nickname update: %s", user_after)   # должен показать nickname != None
 
-    # 3. переводим в следующее состояние
-        await update_user_state(user_id, "gender")
+    # 3. переводим пользователя к выбору пола
+    await update_user_state(user_id, "gender")
 
-    # 4. спрашиваем пол
-        await update.message.reply_text("Укажи свой пол (М/Ж):")
-
-        return  
-
+    await update.message.reply_text("Укажи свой пол (М/Ж):")
+    return  # ← ОБЯЗАТЕЛЬНО остановить дальнейший код
+    
     elif state == "gender":
         if text.lower() in ("м", "муж", "мужской"):
             gender = "М"
