@@ -173,5 +173,26 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⏳ Ищем собеседника...")
         return
 
+      # ---------- Чат ----------
+    elif await is_in_chat(user_id):
+        if text == "❌ Завершить диалог":
+            await end_dialog(user_id, context)
+            return
+
+        if text == "🔍 Новый собеседник":
+            await end_dialog(user_id, context, silent=True)
+            await update_user_state(user_id, "menu")
+            await update.message.reply_text(
+                "Выберите действие:",
+                reply_markup=kb_after_sub()
+            )
+            return
+
+        # обычное сообщение – пересылаем партнёру
+        companion_id = user.get("companion_id")
+        if companion_id:
+            await context.bot.send_message(companion_id, text=text)
+        return
+
     # ---------- Фолбэк ----------
     await update.message.reply_text("❌ Что-то пошло не так. Напиши /start.")
