@@ -28,6 +28,17 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = user["state"]
     logger.debug("STATE=%s TEXT=%s", state, text)
 
+
+    # ---------- Кнопка «Начать» ----------
+    if text == "Начать":
+        await update_user_state(user_id, "theme")
+        keyboard = [[t] for t in TOPICS.keys()]
+        await update.message.reply_text(
+            "Выбери интересующую тебя тему:",
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        )
+        return
+
     # ---------- ШАГ 1: Никнейм ----------
     if state == "nickname":
         # 1. сохраняем ник
