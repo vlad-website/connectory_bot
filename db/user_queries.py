@@ -75,7 +75,7 @@ async def update_user_companion(user_id: int, companion_id: int | None):
     companion_id = None → очищаем связь.
     """
     status = await _exec(
-        "UPDATE users SET companion_id = $1 WHERE id = $2::BIGINT",
+        "UPDATE users SET companion_id = $1::BIGINT WHERE id = $2::BIGINT",
         companion_id, user_id,
     )
     logger.debug("update_user_companion %s → %s", user_id, status)
