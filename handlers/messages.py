@@ -132,36 +132,45 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ---------- Поиск ----------
     elif state == "searching":
         if text == "⛔ Остановить поиск":
+            # 1) убираем из очереди
             await remove_from_queue(user_id)
+            # 2) возвращаем в меню (можно начать поиск заново)
             await update_user_state(user_id, "menu")
-            await update.message.reply_text("Поиск остановлен.", reply_markup=kb_after_sub())
+            await update.message.reply_text(
+                "Поиск остановлен.",
+                reply_markup=kb_after_sub()           # та же клавиатура, что после выбора подтемы
+            )
             return
+
+        if text == "Изменить подтему":
+            await remove_from_queue(user_id)
+            await update_user_state(user_id, "sub")
+            subtopics = TOPICS[user["theme"]] + ["Любая подтема"]
+            await update.message.reply_text(
+                "Выберите новую подтему:",
+                reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
+            )
+            return
+
+        if text == "🏠 Главное меню":
+            await remove_from_queue(user_id)
+            await update_user_state(user_id, "theme")
+            keyboard = [[t] for t in TOPICS.keys()]
+            await update.message.reply_text(
+                "Выбери тему:",
+                reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            )
+            return
+
+        if text == "❤️ Поддержать проект":
+            await update.message.reply_text(
+                "🙏 Спасибо за поддержку!\n(Здесь будет ссылка на донат)",
+                reply_markup=kb_searching()
+            )
+            return
+
+        # дефолт: ничто из меню не нажато
         await update.message.reply_text("⏳ Ищем собеседника...")
-        return
-
-    # ---------- Чат ----------
-    elif await is_in_chat(user_id):
-        await context.bot.send_message(chat_id=user["companion_id"], text=text)
-        return
-
-    # ---------- Системные кнопки ----------
-    if text == "Завершить диалог":
-        await end_dialog(user_id, context)
-        return
-
-    if text == "Главное меню":
-        await update_user_state(user_id, "theme")
-        keyboard = [[t] for t in TOPICS.keys()]
-        await update.message.reply_text(
-            "Выбери интересующую тему:",
-            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-        )
-        return
-
-    if text == "Поддержать проект ❤️":
-        await update.message.reply_text(
-            "🙏 Спасибо за желание поддержать проект!\n(Заглушка, здесь может быть ссылка на донат 💸)"
-        )
         return
 
     # ---------- Фолбэк ----------
