@@ -10,7 +10,7 @@ from db.user_queries import (
     update_user_theme, update_user_sub, update_user_state
 )
 from core.topics import TOPICS
-from core.matchmaking import add_to_queue, is_in_chat
+from core.matchmaking import add_to_queue, is_in_chat, remove_from_queue
 from core.chat_control import end_dialog
 
 logger = logging.getLogger(__name__)
