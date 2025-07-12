@@ -16,8 +16,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.debug("get_user returned: %s (%s)", user, type(user))
 
         # полный сброс перед повторным входом
-        await update_user_state(user_id, "nickname")
-        await update_user_nickname(user_id, None)
+        #await update_user_state(user_id, "nickname")
+        #await update_user_nickname(user_id, None)
 
         if user:
             nickname = (user.get("nickname")            # <- если это dict
