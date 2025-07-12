@@ -67,3 +67,10 @@ async def retry_search(user_id, theme, sub):
 async def is_in_chat(user_id):
     user = await get_user(user_id)
     return user and user.get("state") == "chatting"
+
+async def remove_from_queue(user_id: int):
+    """Убираем пользователя из очереди, если он там есть."""
+    try:
+        queue.remove(user_id)
+    except ValueError:
+        pass  # его и так нет
