@@ -22,6 +22,19 @@ async def end_dialog(user_id: int, context, silent: bool = False):
         await update_user_state(companion_id, "menu")
         await update_user_companion(companion_id, None)
 
+    
+    # если собеседник решил искать нового собеседника
+    if silent:
+        # Тихий режим: сообщаем второй стороне лишь факт завершения,
+        # без уточнения «кто»; даём корректную клавиатуру меню.
+        if companion_id:
+            await context.bot.send_message(
+                companion_id,
+                "💬 Собеседник отключился.",
+                reply_markup=kb_after_sub()
+            )
+        return   # ничего больше не отправляем initiator'у
+
     # отправляем сообщения, если не silent
     if not silent:
         await context.bot.send_message(
