@@ -119,7 +119,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if text == "🔍 Начать поиск":
             await update_user_state(user_id, "searching")
             await update.message.reply_text("🔎 Ищу собеседника...", reply_markup=kb_searching())
-            await add_to_queue(user_id, user["theme"], user["sub"])
+            await add_to_queue(user_id, user["theme"], user["sub"], context)
             return
 
         if text == "Изменить подтему":
