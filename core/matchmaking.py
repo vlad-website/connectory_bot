@@ -1,6 +1,6 @@
 import asyncio
 from collections import deque
-from telegram import Bot
+#from telegram import Bot
 
 from db.user_queries import (
     update_user_state, update_user_companion, get_user
@@ -10,7 +10,7 @@ from handlers.keyboards import kb_chat
 queue = deque()               # <— объявляем очередь
 active_search_tasks = {}
 
-async def add_to_queue(user_id: int, theme: str, sub: str):
+async def add_to_queue(user_id: int, theme: str, sub: str, context):
     """Добавить пользователя в очередь и попробовать найти пару."""
     user = await get_user(user_id)
 
@@ -41,12 +41,12 @@ async def add_to_queue(user_id: int, theme: str, sub: str):
             sub_b = other["sub"] if other["sub"] != "Любая подтема" else sub
 
             # отправляем обоим сообщение и клавиатуру чата
-            await Bot.get_current().send_message(
+            await context.bot.send_message(
                 user_id,
                 f"🎉 Собеседник найден!\nТема: {theme}\nПодтема: {sub_a}",
                 reply_markup=kb_chat()
             )
-            await Bot.get_current().send_message(
+            await context.bot.send_message(
                 other_id,
                 f"🎉 Собеседник найден!\nТема: {theme}\nПодтема: {sub_b}",
                 reply_markup=kb_chat()
@@ -57,19 +57,19 @@ async def add_to_queue(user_id: int, theme: str, sub: str):
     queue.append(user_id)
 
     # таймер повторного поиска
-    task = asyncio.create_task(retry_search(user_id, theme, sub))
+    task = asyncio.create_task(retry_search(user_id, theme, sub, context))
     active_search_tasks[user_id] = task
 
-async def retry_search(user_id: int, theme: str, sub: str):
+async def retry_search(user_id: int, theme: str, sub: str, context):
     """Через минуту повторно пытаемся найти пару."""
     await asyncio.sleep(60)
     user = await get_user(user_id)
     if user and user["state"] == "searching":
-        await Bot.get_current().send_message(
+        await context.bot.send_message(
             user_id,
             "⏳ Всё ещё ищем собеседника... Попробуем ещё раз."
         )
-        await add_to_queue(user_id, theme, sub)
+        await add_to_queue(user_id, theme, sub, context)
 
 async def is_in_chat(user_id: int) -> bool:
     user = await get_user(user_id)
