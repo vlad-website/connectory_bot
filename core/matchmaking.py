@@ -1,20 +1,30 @@
 import asyncio
 from collections import deque
-#from telegram import Bot
 
 from db.user_queries import (
-    update_user_state, update_user_companion, get_user
+    get_user,
+    update_user_state,
+    update_user_companion,
 )
 from handlers.keyboards import kb_chat
+from core.i18n import tr_lang            # локализация строк
 
-queue = deque()               # <— объявляем очередь
-active_search_tasks = {}
+# Человекочитаемые названия языков
+language_names = {
+    "ru": "Русский",     "uk": "Українська",
+    "en": "English",     "es": "Español",
+    "fr": "Français",    "de": "Deutsch",
+}
 
+# ---------- очередь поиска ----------
+queue: deque[int] = deque()
+active_search_tasks: dict[int, asyncio.Task] = {}
+
+# ---------- добавить в очередь / найти пару ----------
 async def add_to_queue(user_id: int, theme: str, sub: str, context):
-    """Добавить пользователя в очередь и попробовать найти пару."""
     user = await get_user(user_id)
 
-    # пытаемся найти совместимого собеседника
+    # ❶ Пытаемся найти подходящего собеседника
     for other_id in list(queue):
         other = await get_user(other_id)
         if not other:
@@ -28,40 +38,47 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
         )
 
         if same_theme and sub_match:
-            queue.remove(other_id)
+            queue.remove(other_id)                      # убираем из очереди
 
-            # переводим обоих в состояние 'chatting'
-            await update_user_state(user_id, "chatting")
+            # ❷ Обоих переводим в state = chatting
+            await update_user_state(user_id,  "chatting")
             await update_user_state(other_id, "chatting")
-            await update_user_companion(user_id, other_id)
+            await update_user_companion(user_id,  other_id)
             await update_user_companion(other_id, user_id)
 
-            # формируем подпись для каждого
+            # ❸ Формируем подписи под‑тем
             sub_a = sub if sub != "Любая подтема" else other["sub"]
             sub_b = other["sub"] if other["sub"] != "Любая подтема" else sub
 
-            # отправляем обоим сообщение и клавиатуру чата
+            # ❹ Локализованный вывод
+            lang_a = language_names.get(user["lang"],  user["lang"])
+            lang_b = language_names.get(other["lang"], other["lang"])
+
             await context.bot.send_message(
                 user_id,
-                f"🎉 Собеседник найден!\nТема: {theme}\nПодтема: {sub_a}",
+                tr_lang(
+                    user["lang"], "found",
+                    theme=theme, sub=sub_a, lang=lang_b
+                ),
                 reply_markup=kb_chat()
             )
             await context.bot.send_message(
                 other_id,
-                f"🎉 Собеседник найден!\nТема: {theme}\nПодтема: {sub_b}",
+                tr_lang(
+                    other["lang"], "found",
+                    theme=theme, sub=sub_b, lang=lang_a
+                ),
                 reply_markup=kb_chat()
             )
-            return
+            return                              # важен выход после успеха
 
-    # пока пары нет — ставим в очередь
+    # ❺ Пары нет — ставим в очередь и запускаем таймер
     queue.append(user_id)
-
-    # таймер повторного поиска
     task = asyncio.create_task(retry_search(user_id, theme, sub, context))
     active_search_tasks[user_id] = task
 
+# ---------- повторный поиск через 60 с ----------
 async def retry_search(user_id: int, theme: str, sub: str, context):
-    """Через минуту повторно пытаемся найти пару."""
     await asyncio.sleep(60)
     user = await get_user(user_id)
     if user and user["state"] == "searching":
@@ -71,9 +88,10 @@ async def retry_search(user_id: int, theme: str, sub: str, context):
         )
         await add_to_queue(user_id, theme, sub, context)
 
+# ---------- утилиты ----------
 async def is_in_chat(user_id: int) -> bool:
     user = await get_user(user_id)
-    return user and user.get("state") == "chatting"
+    return bool(user and user.get("state") == "chatting")
 
 async def remove_from_queue(user_id: int):
     """Убираем пользователя из очереди, если он там есть."""
