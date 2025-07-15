@@ -49,6 +49,7 @@ logger.addHandler(console_handler)
 logger = logging.getLogger(__name__)
 
 application = ApplicationBuilder().token(BOT_TOKEN).build()
+register_handlers(application)
 
 PORT = int(os.environ.get("PORT", "10000"))
 
