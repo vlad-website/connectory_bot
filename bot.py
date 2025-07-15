@@ -56,6 +56,10 @@ PORT = int(os.environ.get("PORT", "10000"))
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
+
+from handlers.commands import register_handlers
+register_handlers(application)
+
 async def handle_webhook(request):
     """
     Получаем POST от Telegram, парсим в Update и передаём в PTB‑Application.
