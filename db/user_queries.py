@@ -21,10 +21,10 @@ async def get_user(user_id: int) -> dict | None:
         return dict(row) if row else None
 
 
-async def create_user(user_id: int):
+async def create_user(user_id: int, lang: str = 'ru'):
     status = await _exec(
-        "INSERT INTO users (id, state) VALUES ($1::BIGINT, 'nickname') ON CONFLICT DO NOTHING",
-        user_id,
+        "INSERT INTO users (id, state, lang) VALUES ($1::BIGINT, 'nickname', $2) ON CONFLICT DO NOTHING",
+        user_id, lang,
     )
     logger.debug("create_user %s → %s", user_id, status)
 
@@ -79,3 +79,10 @@ async def update_user_companion(user_id: int, companion_id: int | None):
         companion_id, user_id,
     )
     logger.debug("update_user_companion %s → %s", user_id, status)
+
+async def update_user_lang(user_id: int, lang: str):
+    status = await _exec(
+        "UPDATE users SET lang = $1 WHERE id = $2::BIGINT",
+        lang, user_id,
+    )
+    logger.debug("update_user_lang %s → %s", user_id, status)
