@@ -1,4 +1,16 @@
 from telegram import ReplyKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
+
+def kb_choose_lang():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")],
+        [InlineKeyboardButton("🇺🇸 English", callback_data="lang_en")],
+        [InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es")],
+        [InlineKeyboardButton("🇫🇷 Français", callback_data="lang_fr")],
+        [InlineKeyboardButton("🇩🇪 Deutsch", callback_data="lang_de")],
+        [InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
+    ])
 
 def kb_after_sub():
     return ReplyKeyboardMarkup(
