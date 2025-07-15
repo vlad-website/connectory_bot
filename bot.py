@@ -60,7 +60,7 @@ PORT = int(os.environ.get("PORT", "10000"))
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
-
+register_handlers(application)  # добавлен из верха
 
 
 async def handle_webhook(request):
