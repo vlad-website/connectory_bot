@@ -13,6 +13,7 @@ from db.user_queries import (
     get_user, create_user, update_user_state,
     update_user_nickname, update_user_lang
 )
+from core.i18n import tr, tr_lang
 
 logger = logging.getLogger(__name__)
 
@@ -39,51 +40,40 @@ language_names = {
 # ---------------- /start ----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    try:
-        logger.info("▶️ /start for %s", user_id)
+    user = await get_user(user_id)
 
-        user = await get_user(user_id)
+    if user:
+        text = await tr(user, "welcome_back", name=user.get("nickname") or "друг")
+        btn  = await tr(user, "btn_start")
+        await update.message.reply_text(
+            text,
+            reply_markup=ReplyKeyboardMarkup([[btn]], resize_keyboard=True)
+        )
+    else:
+        device_lang = (update.effective_user.language_code or "ru").split("-")[0]
+        if device_lang not in language_names:
+            device_lang = "ru"
+        await update.message.reply_text(
+            tr_lang(device_lang, "choose_lang"),
+            reply_markup=kb_choose_lang()
+        )
 
-        if user:
-            nickname = user.get("nickname") or "друг"
-            await update.message.reply_text(
-                f"👋 С возвращением, {nickname}!",
-                reply_markup=ReplyKeyboardMarkup([["Начать"]], resize_keyboard=True)
-            )
-        else:
-            # нового пользователя просим выбрать язык
-            await update.message.reply_text(
-                "🌍 Пожалуйста, выберите язык:",
-                reply_markup=kb_choose_lang()
-            )
-
-        logger.info("✅ /start replied OK for %s", user_id)
-
-    except Exception as e:
-        print("💥 EXCEPTION in /start:", e, flush=True)
-        print(traceback.format_exc(), flush=True)
-        logger.exception("Exception in /start")
-        await update.message.reply_text("⚠️ Ошибка. Попробуйте позже.")
-
-# ---------------- Обработчик выбора языка ----------------
-async def choose_lang(update: Update, context: CallbackContext):
+# ---------- callback: выбор языка ----------
+async def choose_lang(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()                       # закрываем «часики»
-
+    await query.answer()
+    lang = query.data.split("_")[1]
     user_id = query.from_user.id
-    lang = query.data.split("_")[1]            # lang_ru → ru
 
-    # создаём пользователя с выбранным языком
     await create_user(user_id, lang)
     await update_user_lang(user_id, lang)
     await update_user_state(user_id, "nickname")
 
-    lang_name = language_names.get(lang, lang)
     await query.edit_message_text(
-        f"✅ {lang_name} выбран.\n\n👋 Введи свой ник (имя, по которому тебя увидит собеседник):"
+        tr_lang(lang, "enter_nick")
     )
 
-# ---------------- Регистрация хендлеров ----------------
-def register_handlers(application):
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(choose_lang, pattern=r"^lang_"))
+# ---------- регистрация ----------
+def register_handlers(app):
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(choose_lang, pattern=r"^lang_"))
