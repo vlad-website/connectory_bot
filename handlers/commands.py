@@ -65,12 +65,15 @@ async def choose_lang(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = query.data.split("_")[1]
     user_id = query.from_user.id
 
-    await create_user(user_id, lang)
+    await create_user(user_id, lang)            # если запись уже есть – ON CONFLICT DO NOTHING
     await update_user_lang(user_id, lang)
     await update_user_state(user_id, "nickname")
 
-    await query.edit_message_text(
-        tr_lang(lang, "enter_nick")
+    await query.message.delete()                # убираем меню языков
+
+    await context.bot.send_message(
+        chat_id=user_id,
+        text=tr_lang(lang, "enter_nick")
     )
 
 # ---------- регистрация ----------
