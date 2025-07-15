@@ -15,7 +15,7 @@ from handlers.commands import start
 from handlers.messages import message_handler
 
 from handlers.commands import register_handlers
-register_handlers(application)
+
 
 # гарантируем flush stdout
 os.environ["PYTHONUNBUFFERED"] = "1"
