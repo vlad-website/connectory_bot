@@ -63,7 +63,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
     elif user["state"] == "sub":
-        subtopics = TOPICS[user["theme"]] + ["Любая подтема"]
+        subtopics = TOPICS[user["theme"]] + [await tr(user, "sub_any")]
         keyboard = [[s] for s in subtopics]
         await update.message.reply_text(await tr(user, "choose_sub"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
