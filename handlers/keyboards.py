@@ -1,6 +1,6 @@
 from telegram import ReplyKeyboardMarkup
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from i18n import tr
+from core.i18n import tr
 
 def kb_choose_lang():
     return InlineKeyboardMarkup([
