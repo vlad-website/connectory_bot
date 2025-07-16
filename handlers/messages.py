@@ -1,7 +1,7 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from handlers.keyboards import kb_after_sub, kb_searching, kb_chat
-from i18n import tr
+from core.i18n import tr
 
 import logging
 
