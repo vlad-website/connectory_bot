@@ -42,21 +42,40 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user = await get_user(user_id)
 
-    if user:
-        text = await tr(user, "welcome_back", name=user.get("nickname") or "друг")
-        btn  = await tr(user, "btn_start")
-        await update.message.reply_text(
-            text,
-            reply_markup=ReplyKeyboardMarkup([[btn]], resize_keyboard=True)
+    if not user:
+        # зарегистрировать пользователя
+        await create_user(user_id, lang="ru")  # или "en", если автоопределяешь
+        await update_user_state(user_id, "nickname")
+        await update.message.reply_text("Привет! Как тебя зовут?")
+        return
+
+    # 🔒 Пользователь не закончил регистрацию
+    if user["state"] == "nickname":
+        await update.message.reply_text(await tr(user, "enter_nick"))
+        return
+    elif user["state"] == "gender":
+        await update.message.reply_text(await tr(user, "choose_gender"))
+        return
+    elif user["state"] == "theme":
+        keyboard = [[t] for t in TOPICS.keys()]
+        await update.message.reply_text(await tr(user, "pick_theme"),
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
-    else:
-        device_lang = (update.effective_user.language_code or "ru").split("-")[0]
-        if device_lang not in language_names:
-            device_lang = "ru"
-        await update.message.reply_text(
-            tr_lang(device_lang, "choose_lang"),
-            reply_markup=kb_choose_lang()
+        return
+    elif user["state"] == "sub":
+        subtopics = TOPICS[user["theme"]] + ["Любая подтема"]
+        keyboard = [[s] for s in subtopics]
+        await update.message.reply_text(await tr(user, "choose_sub"),
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
+        return
+
+    # ✅ Всё хорошо, пользователь зарегистрирован
+    await update_user_state(user_id, "menu")
+    await update.message.reply_text(
+        await tr(user, "main_menu"),
+        reply_markup=await kb_after_sub(user)
+    )
 
 # ---------- callback: выбор языка ----------
 async def choose_lang(update: Update, context: ContextTypes.DEFAULT_TYPE):
