@@ -1,7 +1,7 @@
-# handlers/messages.py
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from handlers.keyboards import kb_after_sub, kb_searching, kb_chat
+from i18n import tr
 
 import logging
 
@@ -28,55 +28,46 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = user["state"]
     logger.debug("STATE=%s TEXT=%s", state, text)
 
-
     # ---------- Кнопка «Начать» ----------
-    if text == "Начать":
+    if text == await tr(user, "btn_start"):
         await update_user_state(user_id, "theme")
         keyboard = [[t] for t in TOPICS.keys()]
         await update.message.reply_text(
-            "Выбери интересующую тебя тему:",
+            await tr(user, "pick_theme"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
         return
 
     # ---------- ШАГ 1: Никнейм ----------
     if state == "nickname":
-        # 1. сохраняем ник
         await update_user_nickname(user_id, text)
-
-        # 2. проверяем, что ник действительно записан
-        user_after = await get_user(user_id)
-        logger.debug("After nickname update: %s", user_after)
-
-        # 3. переводим пользователя к выбору пола
         await update_user_state(user_id, "gender")
 
         await update.message.reply_text(
-            "Укажи свой пол:",
+            await tr(user, "choose_gender"),
             reply_markup=ReplyKeyboardMarkup(
-                [["Мужской"], ["Женский"], ["Не важно"]], resize_keyboard=True
+                [[await tr(user, "male")], [await tr(user, "female")], [await tr(user, "any_gender")]],
+                resize_keyboard=True
             )
         )
-        return                      # <– обязателен, чтобы не провалиться дальше
+        return
 
     # ---------- ШАГ 2: Пол ----------
     elif state == "gender":
-        if text not in ("Мужской", "Женский", "Не важно"):
+        valid_genders = [await tr(user, "male"), await tr(user, "female"), await tr(user, "any_gender")]
+        if text not in valid_genders:
             await update.message.reply_text(
-                "Пожалуйста, выбери пол:", 
-                reply_markup=ReplyKeyboardMarkup(
-                    [["Мужской"], ["Женский"], ["Не важно"]], resize_keyboard=True
-                )
+                await tr(user, "wrong_gender"),
+                reply_markup=ReplyKeyboardMarkup([[g] for g in valid_genders], resize_keyboard=True)
             )
             return
 
-        gender = text            # уже нормальная форма
-        await update_user_gender(user_id, gender)
+        await update_user_gender(user_id, text)
         await update_user_state(user_id, "theme")
 
         keyboard = [[t] for t in TOPICS.keys()]
         await update.message.reply_text(
-            "Выбери интересующую тебя тему:",
+            await tr(user, "pick_theme"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
         return
@@ -84,16 +75,16 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ---------- ШАГ 3: Тема ----------
     elif state == "theme":
         if text not in TOPICS:
-            await update.message.reply_text("Пожалуйста, выбери тему из списка.")
+            await update.message.reply_text(await tr(user, "wrong_theme"))
             return
 
         await update_user_theme(user_id, text)
         await update_user_state(user_id, "sub")
 
-        subtopics = TOPICS[text] + ["Любая подтема"]
+        subtopics = TOPICS[text] + [await tr(user, "any_sub")]
         keyboard = [[s] for s in subtopics]
         await update.message.reply_text(
-            "Теперь выбери подтему:",
+            await tr(user, "choose_sub"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
         return
@@ -101,90 +92,82 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ---------- ШАГ 4: Подтема ----------
     elif state == "sub":
         theme = user["theme"]
-        valid_subs = TOPICS.get(theme, []) + ["Любая подтема"]
+        valid_subs = TOPICS.get(theme, []) + [await tr(user, "any_sub")]
         if text not in valid_subs:
-            await update.message.reply_text("Выбери подтему из списка.")
+            await update.message.reply_text(await tr(user, "wrong_sub"))
             return
 
         await update_user_sub(user_id, text)
-        await update_user_state(user_id, "menu")           # ← теперь 'menu'
+        await update_user_state(user_id, "menu")
         await update.message.reply_text(
-            f"Вы выбрали: {theme} / {text}",
-            reply_markup=kb_after_sub()                    # ← меню после выбора
+            f"{await tr(user, 'pick_theme')}: {theme}\n{await tr(user, 'pick_sub')}: {text}",
+            reply_markup=kb_after_sub(user)
         )
         return
 
-    # ---------- Новый блок ----------
+    # ---------- Меню ----------
     elif state == "menu":
-        if text == "🔍 Начать поиск":
+        if text == await tr(user, "btn_search"):
             await update_user_state(user_id, "searching")
-            await update.message.reply_text("🔎 Ищу собеседника...", reply_markup=kb_searching())
+            await update.message.reply_text(await tr(user, "searching"), reply_markup=kb_searching(user))
             await add_to_queue(user_id, user["theme"], user["sub"], context)
             return
 
-        if text == "Изменить подтему":
+        if text == await tr(user, "btn_change_sub"):
             await update_user_state(user_id, "sub")
-            subtopics = TOPICS[user["theme"]] + ["Любая подтема"]
+            subtopics = TOPICS[user["theme"]] + [await tr(user, "any_sub")]
             await update.message.reply_text(
-                "Выберите подтему:",
+                await tr(user, "choose_sub"),
                 reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
             )
             return
 
-        if text == "🏠 Главное меню":
+        if text == await tr(user, "btn_main_menu"):
             await update_user_state(user_id, "theme")
             keyboard = [[t] for t in TOPICS.keys()]
             await update.message.reply_text(
-                "Выбери интересующую тему:",
+                await tr(user, "pick_theme"),
                 reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
             )
             return
 
     # ---------- Поиск ----------
     elif state == "searching":
-        if text == "⛔ Остановить поиск":
-            # 1) убираем из очереди
+        if text == await tr(user, "btn_stop"):
             await remove_from_queue(user_id)
-            # 2) возвращаем в меню (можно начать поиск заново)
             await update_user_state(user_id, "menu")
-            await update.message.reply_text(
-                "Поиск остановлен.",
-                reply_markup=kb_after_sub()           # та же клавиатура, что после выбора подтемы
-            )
+            await update.message.reply_text(await tr(user, "search_stopped"), reply_markup=kb_after_sub(user))
             return
 
-        if text == "Изменить подтему":
+        if text == await tr(user, "btn_change_sub"):
             await remove_from_queue(user_id)
             await update_user_state(user_id, "sub")
-            subtopics = TOPICS[user["theme"]] + ["Любая подтема"]
+            subtopics = TOPICS[user["theme"]] + [await tr(user, "any_sub")]
             await update.message.reply_text(
-                "Выберите новую подтему:",
+                await tr(user, "pick_sub"),
                 reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
             )
             return
 
-        if text == "🏠 Главное меню":
+        if text == await tr(user, "btn_main_menu"):
             await remove_from_queue(user_id)
             await update_user_state(user_id, "theme")
             keyboard = [[t] for t in TOPICS.keys()]
             await update.message.reply_text(
-                "Выбери тему:",
+                await tr(user, "pick_theme"),
                 reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
             )
             return
 
-        if text == "❤️ Поддержать проект":
-            await update.message.reply_text(
-                "🙏 Спасибо за поддержку!\n(Здесь будет ссылка на донат)",
-                reply_markup=kb_searching()
-            )
+        if text == await tr(user, "btn_support"):
+            await update.message.reply_text("🙏 Спасибо за поддержку!\n(Здесь будет ссылка на донат)",
+                                            reply_markup=kb_searching(user))
             return
 
-        # дефолт: ничто из меню не нажато
-        await update.message.reply_text("⏳ Ищем собеседника...")
+        await update.message.reply_text(await tr(user, "default_searching"))
         return
 
-      # ---------- Чат ----------
+    # ---------- Чат ----------
     elif await is_in_chat(user_id):
         if text == "❌ Завершить диалог":
             await end_dialog(user_id, context)
@@ -194,16 +177,15 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await end_dialog(user_id, context, silent=True)
             await update_user_state(user_id, "menu")
             await update.message.reply_text(
-                "Выберите действие:",
-                reply_markup=kb_after_sub()
+                await tr(user, "main_menu"),
+                reply_markup=kb_after_sub(user)
             )
             return
 
-        # обычное сообщение – пересылаем партнёру
         companion_id = user.get("companion_id")
         if companion_id:
             await context.bot.send_message(companion_id, text=text)
         return
 
     # ---------- Фолбэк ----------
-    await update.message.reply_text("❌ Что-то пошло не так. Напиши /start.")
+    await update.message.reply_text(await tr(user, "error_fallback"))
