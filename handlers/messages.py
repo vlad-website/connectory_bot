@@ -48,9 +48,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             await tr(user, "choose_gender"),
             reply_markup=ReplyKeyboardMarkup(
-                [[await tr(user, "male")],
-                 [await tr(user, "female")],
-                 [await tr(user, "any_gender")]],
+                [[await tr(user, "gender_male")],
+                 [await tr(user, "gender_female")],
+                 [await tr(user, "gender_any")]],
                 resize_keyboard=True
             )
         )
@@ -58,7 +58,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ---------- ШАГ 2: Пол ----------
     elif state == "gender":
-        valid_genders = [await tr(user, "male"), await tr(user, "female"), await tr(user, "any_gender")]
+        valid_genders = [await tr(user, "gender_male"), await tr(user, "gender_female"), await tr(user, "gender_any")]
         if text not in valid_genders:
             await update.message.reply_text(
                 await tr(user, "wrong_gender"),
