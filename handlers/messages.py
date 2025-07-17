@@ -24,8 +24,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user = await get_user(user_id)
     if not user:
-        # Пользователь не зарегистрирован — предлагаем нажать /start
-        await update.message.reply_text("❗ Пожалуйста, отправьте /start для начала.")
+        await update.message.reply_text(await tr_lang("ru", "pls_start"))  # Язык по умолчанию
         return
 
     state = user["state"]
@@ -44,7 +43,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if state == "nickname":
         await update_user_nickname(user_id, text)
         await update_user_state(user_id, "gender")
-
         await update.message.reply_text(
             await tr(user, "choose_gender"),
             reply_markup=ReplyKeyboardMarkup(
