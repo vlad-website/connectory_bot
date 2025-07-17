@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 from handlers.keyboards import kb_choose_lang
 
- ---------------- Клавиатура выбора языка ----------------
+#---------------- Клавиатура выбора языка ----------------
 def kb_choose_lang() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
