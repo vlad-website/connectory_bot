@@ -16,6 +16,7 @@ TEXTS = {
         "search_stopped": "Поиск остановлен.",
         "error_fallback": "❌ Что-то пошло не так. Напиши /start.",
         "sub_any": "Любая подтема",
+        "support_thanks": "🙏 Спасибо за поддержку!\n(Здесь будет ссылка на донат)",
 
         # Кнопки
         "btn_start": "Начать",
@@ -26,6 +27,8 @@ TEXTS = {
         "btn_support": "❤️ Поддержать проект",
         "btn_end_dialog": "❌ Завершить диалог",
         "btn_new_partner": "🔍 Новый собеседник",
+        "pls_start": "Пожалуйста, отправьте /start.",
+        "btn_end": "❌ Завершить диалог",
 
         # Пол
         "gender_male": "Мужской",
@@ -49,6 +52,7 @@ TEXTS = {
         "search_stopped": "Пошук зупинено.",
         "error_fallback": "❌ Щось пішло не так. Напишіть /start.",
         "sub_any": "Будь-яка підтема",
+        "support_thanks": "🙏 Дякуємо за підтримку!\n(Тут буде посилання на донат)",
 
         "btn_start": "Почати",
         "btn_search": "🔍 Почати пошук",
@@ -58,6 +62,8 @@ TEXTS = {
         "btn_support": "❤️ Підтримати проект",
         "btn_end_dialog": "❌ Завершити діалог",
         "btn_new_partner": "🔍 Новий співрозмовник",
+        "pls_start": "Будь ласка, надішліть /start.",
+        "btn_end": "❌ Завершити діалог",
 
         "gender_male": "Чоловіча",
         "gender_female": "Жіноча",
@@ -80,6 +86,7 @@ TEXTS = {
         "search_stopped": "Search stopped.",
         "error_fallback": "❌ Something went wrong. Please send /start.",
         "sub_any": "Any subtopic",
+        "support_thanks": "🙏 Thanks for your support!\n(A donation link will appear here)",
 
         "btn_start": "Start",
         "btn_search": "🔍 Start search",
@@ -89,6 +96,8 @@ TEXTS = {
         "btn_support": "❤️ Support the project",
         "btn_end_dialog": "❌ End chat",
         "btn_new_partner": "🔍 New partner",
+        "pls_start": "Please send /start.",
+        "btn_end": "❌ End chat",
 
         "gender_male": "Male",
         "gender_female": "Female",
@@ -111,6 +120,7 @@ TEXTS = {
         "search_stopped": "Búsqueda detenida.",
         "error_fallback": "❌ Algo salió mal. Escribe /start.",
         "sub_any": "Cualquier subtema",
+        "support_thanks": "🙏 ¡Gracias por tu apoyo!\n(Aquí aparecerá el enlace de donación)",
 
         "btn_start": "Comenzar",
         "btn_search": "🔍 Buscar",
@@ -120,6 +130,8 @@ TEXTS = {
         "btn_support": "❤️ Apoyar el proyecto",
         "btn_end_dialog": "❌ Terminar chat",
         "btn_new_partner": "🔍 Nueva pareja",
+        "pls_start": "Por favor, envía /start.",
+        "btn_end": "❌ Terminar chat",
 
         "gender_male": "Masculino",
         "gender_female": "Femenino",
@@ -142,6 +154,7 @@ TEXTS = {
         "search_stopped": "Recherche arrêtée.",
         "error_fallback": "❌ Une erreur est survenue. Envoyez /start.",
         "sub_any": "N’importe quel sous-thème",
+        "support_thanks": "🙏 Merci pour votre soutien !\n(Un lien de don apparaîtra ici)",
 
         "btn_start": "Commencer",
         "btn_search": "🔍 Lancer la recherche",
@@ -151,6 +164,8 @@ TEXTS = {
         "btn_support": "❤️ Soutenir le projet",
         "btn_end_dialog": "❌ Terminer la discussion",
         "btn_new_partner": "🔍 Nouveau partenaire",
+        "pls_start": "Veuillez envoyer /start.",
+        "btn_end": "❌ Terminer la discussion",
 
         "gender_male": "Homme",
         "gender_female": "Femme",
@@ -173,6 +188,7 @@ TEXTS = {
         "search_stopped": "Suche gestoppt.",
         "error_fallback": "❌ Etwas ist schiefgelaufen. Sende /start.",
         "sub_any": "Beliebiges Unterthema",
+        "support_thanks": "🙏 Vielen Dank für deine Unterstützung!\n(Hier erscheint ein Spendenlink)",
 
         "btn_start": "Start",
         "btn_search": "🔍 Suche starten",
@@ -182,6 +198,8 @@ TEXTS = {
         "btn_support": "❤️ Projekt unterstützen",
         "btn_end_dialog": "❌ Gespräch beenden",
         "btn_new_partner": "🔍 Neuer Partner",
+        "pls_start": "Bitte sende /start.",
+        "btn_end": "❌ Chat beenden",
 
         "gender_male": "Männlich",
         "gender_female": "Weiblich",
