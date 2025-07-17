@@ -11,7 +11,7 @@ from db.user_queries import (
     get_user, create_user, update_user_state,
     update_user_lang
 )
-from core.i18n import tr, tr_lang
+from core.i18n import tr, tr_lang, tr_user
 from core.topics import TOPICS
 from handlers.keyboards import kb_after_sub
 
