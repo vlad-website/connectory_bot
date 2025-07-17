@@ -81,6 +81,6 @@ async def update_user_companion(user_id: int, companion_id: int | None):
     logger.debug("update_user_companion %s → %s", user_id, status)
 
 async def update_user_lang(user_id: int, lang: str):
-    await _exec("UPDATE users SET lang = $1 WHERE id = $2::BIGINT", lang, user_id)
+    status = await _exec("UPDATE users SET lang = $1 WHERE id = $2::BIGINT", lang, user_id)
     
     logger.debug("update_user_lang %s → %s", user_id, status)
