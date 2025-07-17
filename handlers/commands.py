@@ -48,7 +48,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if device_lang not in language_names:
             device_lang = "ru"
         await update.message.reply_text(
-            tr_lang(device_lang, "choose_lang"),
+            await tr_lang(device_lang, "choose_lang"),
             reply_markup=kb_choose_lang()
         )
         return
@@ -58,23 +58,27 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = user.get("lang", "ru")
 
     if state == "nickname":
-        await update.message.reply_text(tr_lang(lang, "enter_nick"))
+        await update.message.reply_text(await tr_lang(lang, "enter_nick"))
         return
+
     elif state == "gender":
-        await update.message.reply_text(tr_lang(lang, "choose_gender"))
+        await update.message.reply_text(await tr_lang(lang, "choose_gender"))
         return
+
     elif state == "theme":
         keyboard = [[t] for t in TOPICS.keys()]
         await update.message.reply_text(
-            tr_lang(lang, "pick_theme"),
+            await tr_lang(lang, "pick_theme"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
         return
+
     elif state == "sub":
-        subtopics = TOPICS.get(user["theme"], []) + [tr_lang(lang, "sub_any")]
+        theme = user.get("theme")
+        subtopics = TOPICS.get(theme, []) + [await tr_lang(lang, "sub_any")]
         keyboard = [[s] for s in subtopics]
         await update.message.reply_text(
-            tr_lang(lang, "choose_sub"),
+            await tr_lang(lang, "choose_sub"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
         return
@@ -101,7 +105,7 @@ async def choose_lang(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=user_id,
-        text=tr_lang(lang, "enter_nick")
+        text=await tr_lang(lang, "enter_nick")
     )
 
 # ---------- регистрация ----------
