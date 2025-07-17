@@ -173,7 +173,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await end_dialog(user_id, context)
             return
 
-        if text == await tr(user, "btn_new"):
+        if text == await tr(user, "btn_new_partner"):
             await end_dialog(user_id, context, silent=True)
             await update_user_state(user_id, "menu")
             await update.message.reply_text(
