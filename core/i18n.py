@@ -211,13 +211,8 @@ def tr_lang(lang: str, key: str, **kw) -> str:
     lang = lang if lang in TEXTS else "ru"
     return TEXTS[lang].get(key, key).format(**kw)
 
-async def tr(user, key: str, **kw) -> str:
-    lang = "ru"
-    if isinstance(user, dict):
-        lang = user.get("lang", "ru")
-    elif hasattr(user, "id"):
-        from db.user_queries import get_user
-        row = await get_user(user.id)
-        if row:
-            lang = row.get("lang", "ru")
+async def tr_user(user_obj, key: str, **kw) -> str:
+    from db.user_queries import get_user
+    row = await get_user(user_obj.id)
+    lang = row.get("lang", "ru") if row else "ru"
     return tr_lang(lang, key, **kw)
