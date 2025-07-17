@@ -22,7 +22,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user = await get_user(user_id)
     if not user:
-        await update.message.reply_text("Пожалуйста, отправьте /start.")
+        await update.message.reply_text(await tr(user, "pls_start"))
         return
 
     state = user["state"]
@@ -160,8 +160,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         if text == await tr(user, "btn_support"):
-            await update.message.reply_text("🙏 Спасибо за поддержку!\n(Здесь будет ссылка на донат)",
-                                            reply_markup=kb_searching(user))
+            await update.message.reply_text(await tr(user, "support_thanks"),
+                                reply_markup=kb_searching(user))
             return
 
         await update.message.reply_text(await tr(user, "default_searching"))
@@ -169,11 +169,11 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ---------- Чат ----------
     elif await is_in_chat(user_id):
-        if text == "❌ Завершить диалог":
+        if text == await tr(user, "btn_end"):
             await end_dialog(user_id, context)
             return
 
-        if text == "🔍 Новый собеседник":
+        if text == await tr(user, "btn_new"):
             await end_dialog(user_id, context, silent=True)
             await update_user_state(user_id, "menu")
             await update.message.reply_text(
