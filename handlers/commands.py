@@ -17,32 +17,34 @@ from handlers.keyboards import kb_after_sub
 
 logger = logging.getLogger(__name__)
 
-# ---------------- Клавиатура выбора языка ----------------
-def kb_choose_lang() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
-         InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
-        [InlineKeyboardButton("🇺🇸 English",  callback_data="lang_en"),
-         InlineKeyboardButton("🇪🇸 Español",  callback_data="lang_es")],
-        [InlineKeyboardButton("🇫🇷 Français", callback_data="lang_fr"),
-         InlineKeyboardButton("🇩🇪 Deutsch",  callback_data="lang_de")],
-    ])
+from handlers.keyboards import kb_choose_lang
 
-language_names = {
-    "ru": "Русский",
-    "uk": "Українська",
-    "en": "English",
-    "es": "Español",
-    "fr": "Français",
-    "de": "Deutsch",
-}
+# ---------------- Клавиатура выбора языка ----------------
+#def kb_choose_lang() -> InlineKeyboardMarkup:
+#    return InlineKeyboardMarkup([
+#        [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
+#         InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
+#        [InlineKeyboardButton("🇺🇸 English",  callback_data="lang_en"),
+#         InlineKeyboardButton("🇪🇸 Español",  callback_data="lang_es")],
+#        [InlineKeyboardButton("🇫🇷 Français", callback_data="lang_fr"),
+#         InlineKeyboardButton("🇩🇪 Deutsch",  callback_data="lang_de")],
+#    ])
+#
+#language_names = {
+#    "ru": "Русский",
+#    "uk": "Українська",
+#    "en": "English",
+#    "es": "Español",
+#    "fr": "Français",
+#    "de": "Deutsch",
+#}
 
 # ---------------- /start ----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user = await get_user(user_id)
 
-    if not user:
+    if not user or not user.get("lang"):
         # Пользователь новый — предлагаем выбрать язык
         device_lang = (update.effective_user.language_code or "ru").split("-")[0]
         if device_lang not in language_names:
