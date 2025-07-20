@@ -24,7 +24,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user = await get_user(user_id)
     if not user:
-        await update.message.reply_text(await tr_lang("ru", "pls_start"))  # Язык по умолчанию
+        await update.message.reply_text(tr_lang("ru", "pls_start"))  # Язык по умолчанию
         return
 
     state = user["state"]
