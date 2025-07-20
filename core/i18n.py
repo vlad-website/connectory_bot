@@ -34,6 +34,10 @@ TEXTS = {
         "gender_male": "Мужской",
         "gender_female": "Женский",
         "gender_any": "Не важно",
+
+        # Вывод
+        "confirm_theme": "Вы выбрали тему: {theme}",
+        "confirm_sub": "И подтему: {sub}",
     },
     "uk": {
         "choose_lang": "🌍 Будь ласка, оберіть мову:",
@@ -68,6 +72,10 @@ TEXTS = {
         "gender_male": "Чоловіча",
         "gender_female": "Жіноча",
         "gender_any": "Неважливо",
+
+        "confirm_theme": "Ви обрали тему: {theme}",
+        "confirm_sub": "Та підтему: {sub}",
+        
     },
     "en": {
         "choose_lang": "🌍 Please choose your language:",
@@ -102,6 +110,10 @@ TEXTS = {
         "gender_male": "Male",
         "gender_female": "Female",
         "gender_any": "Doesn't matter",
+
+        "confirm_theme": "You selected the topic: {theme}",
+        "confirm_sub": "And the subtopic: {sub}",
+        
     },
     "es": {
         "choose_lang": "🌍 Por favor, elige un idioma:",
@@ -136,6 +148,10 @@ TEXTS = {
         "gender_male": "Masculino",
         "gender_female": "Femenino",
         "gender_any": "No importa",
+
+        "confirm_theme": "Has elegido el tema: {theme}",
+        "confirm_sub": "Y el subtema: {sub}",
+        
     },
     "fr": {
         "choose_lang": "🌍 Veuillez choisir votre langue :",
@@ -170,6 +186,10 @@ TEXTS = {
         "gender_male": "Homme",
         "gender_female": "Femme",
         "gender_any": "Peu importe",
+
+        "confirm_theme": "Vous avez choisi le thème : {theme}",
+        "confirm_sub": "Et le sous-thème : {sub}",
+        
     },
     "de": {
         "choose_lang": "🌍 Bitte wähle eine Sprache:",
@@ -204,6 +224,10 @@ TEXTS = {
         "gender_male": "Männlich",
         "gender_female": "Weiblich",
         "gender_any": "Egal",
+
+        "confirm_theme": "Du hast das Thema gewählt: {theme}",
+        "confirm_sub": "Und das Unterthema: {sub}",
+        
     },
 }
 
