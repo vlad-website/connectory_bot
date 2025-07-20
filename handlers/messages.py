@@ -24,11 +24,11 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user = await get_user(user_id)
     if not user:
-    await update.message.reply_text(
-        tr_lang("ru", "pls_start"),
-        reply_markup=ReplyKeyboardMarkup([["/start"]], resize_keyboard=True)
-    )
-    return
+        await update.message.reply_text(
+            tr_lang("ru", "pls_start"),
+            reply_markup=ReplyKeyboardMarkup([["/start"]], resize_keyboard=True)
+        )
+        return
 
     state = user["state"]
     logger.debug("STATE=%s TEXT=%s", state, text)
