@@ -24,8 +24,11 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user = await get_user(user_id)
     if not user:
-        await update.message.reply_text(tr_lang("ru", "pls_start"))  # Язык по умолчанию
-        return
+    await update.message.reply_text(
+        tr_lang("ru", "pls_start"),
+        reply_markup=ReplyKeyboardMarkup([["/start"]], resize_keyboard=True)
+    )
+    return
 
     state = user["state"]
     logger.debug("STATE=%s TEXT=%s", state, text)
@@ -99,8 +102,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update_user_sub(user_id, text)
         await update_user_state(user_id, "menu")
+        msg = f"{await tr(user, 'confirm_theme', theme=theme)}\n{await tr(user, 'confirm_sub', sub=text)}"
         await update.message.reply_text(
-            f"{await tr(user, 'pick_theme')}: {theme}\n{await tr(user, 'pick_sub')}: {text}",
+            msg,
             reply_markup=await kb_after_sub(user)
         )
         return
