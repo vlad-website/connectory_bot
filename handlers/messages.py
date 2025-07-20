@@ -101,7 +101,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_state(user_id, "menu")
         await update.message.reply_text(
             f"{await tr(user, 'pick_theme')}: {theme}\n{await tr(user, 'pick_sub')}: {text}",
-            reply_markup=kb_after_sub(user)
+            reply_markup=await kb_after_sub(user)
         )
         return
 
@@ -111,7 +111,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update_user_state(user_id, "searching")
             await update.message.reply_text(
                 await tr(user, "searching"),
-                reply_markup=kb_searching(user)
+                reply_markup=await kb_searching(user)
             )
             await add_to_queue(user_id, user["theme"], user["sub"], context)
             return
@@ -140,7 +140,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update_user_state(user_id, "menu")
             await update.message.reply_text(
                 await tr(user, "search_stopped"),
-                reply_markup=kb_after_sub(user)
+                reply_markup=await kb_after_sub(user)
             )
             return
 
@@ -166,7 +166,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif text == await tr(user, "btn_support"):
             await update.message.reply_text(
                 await tr(user, "support_thanks"),
-                reply_markup=kb_searching(user)
+                reply_markup=await kb_searching(user)
             )
             return
 
@@ -184,7 +184,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update_user_state(user_id, "menu")
             await update.message.reply_text(
                 await tr(user, "main_menu"),
-                reply_markup=kb_after_sub(user)
+                reply_markup=await kb_after_sub(user)
             )
             return
 
