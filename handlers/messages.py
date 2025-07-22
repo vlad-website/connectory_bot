@@ -77,7 +77,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ---------- ШАГ 3: Тема ----------
     # Сопоставляем перевод обратно в ключ
-    theme_key = None
+        theme_key = None
         for key in TOPICS:
             if await tr(user, key) == text:
                 theme_key = key
