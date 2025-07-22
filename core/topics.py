@@ -1,25 +1,14 @@
 TOPICS = {
-    "💻 IT": ["👨‍💻 Программирование", "🎨 Дизайн", "🤖 AI", "🧑‍💼 Карьера в IT", "🎮 Геймдев", "💼 Фриланс в IT", "🛡 Кибербезопасность"],
-    
-    "📚 Образование и наука": ["🧠 Нейронаука", "🪐 Астрономия", "🧬 Биология", "🏺 История", "📖 Философия", "🌱 Саморазвитие"],
-    
-    "🎯 Хобби": ["🕹 Игры", "✈️ Путешествия", "📘 Книги", "🎵 Музыка"],
-    
-    "💼 Бизнес": ["🚀 Стартапы", "🤝 Поиск партнёров", "📢 Маркетинг", "💰 Финансы", "🧠 Предпринимательство", "📉 Инвестиции", "🪙 Криптовалюты", "📊 Менеджмент"],
-    
-    "🎨 Культура и искусство": ["🖼 Современное искусство", "🎨 Живопись", "🏛 Архитектура", "📸 Фотография", "🎭 Театр", "👗 Мода", "🌍 Культурология", "✍️ Поэзия"],
-    
-    "📖 Книги": ["📚 Художественная литература", "📘 Нон-фикшн", "🧙‍♂️ Фэнтези", "🚀 Научная фантастика", "👤 Биографии", "📝 Поэзия", "🏛 Классика"],
-    
-    "🎬 Фильмы и сериалы": ["🎥 Киноиндустрия", "🌟 Голливуд / Авторское кино", "🎌 Аниме", "📽 Документалки", "📺 Сериалы Netflix"],
-    
-    "🎵 Музыка": ["🎸 Рок", "🎤 Рэп / Хип-хоп", "🎧 Электронная музыка", "🎻 Классика", "🎷 Джаз", "🎶 K-pop", "🎚 Музыка и продюсирование"],
-    
-    "🌍 Путешествия и культура": ["🇪🇺 Европа", "🌏 Азия", "🏝 Цифровые кочевники", "🌎 Жизнь за границей", "🗣 Языки и лингвистика", "🤝 Культурный обмен"],
-    
-    "💬 Повседневные темы": ["❤️ Отношения и знакомства", "👫 Дружба", "🤣 Мемы и юмор", "🧑‍💻 Работа и карьера", "🎯 Увлечения", "🌱 Волонтёрство"],
-    
-    "💪 Здоровье и спорт": ["🏋️‍♂️ Фитнес", "🥗 Питание", "🧘 Медитация", "🍏 ЗОЖ", "⚽️ Футбол", "🏀 Баскетбол", "🥊 Бокс / ММА", "🏃‍♂️ Бег и марафоны"],
-    
-    "🧠 Психология": ["🔍 Самооценка", "😰 Тревожность", "💞 Отношения", "🔥 Мотивация"],
+    "it": ["programming", "design", "ai", "career_it", "gamedev", "freelance_it", "cybersecurity"],
+    "education_science": ["neuroscience", "astronomy", "biology", "history", "philosophy", "self_dev"],
+    "hobbies": ["games", "travel", "books", "music"],
+    "business": ["startups", "partners", "marketing", "finance", "entrepreneurship", "investments", "crypto", "management"],
+    "arts_culture": ["modern_art", "painting", "architecture", "photography", "theatre", "fashion", "culturology", "poetry"],
+    "books": ["fiction", "nonfiction", "fantasy", "scifi", "biography", "poetry", "classics"],
+    "movies_series": ["film_industry", "hollywood", "anime", "documentary", "netflix"],
+    "music": ["rock", "rap", "electronic", "classical", "jazz", "kpop", "music_prod"],
+    "travel_culture": ["europe", "asia", "nomads", "living_abroad", "languages", "exchange"],
+    "daily_life": ["relationships", "friendship", "memes", "work_career", "hobbies_general", "volunteering"],
+    "health_sport": ["fitness", "nutrition", "meditation", "healthy_life", "football", "basketball", "mma", "running"],
+    "psychology": ["self_esteem", "anxiety", "relationships_psy", "motivation"]
 }
