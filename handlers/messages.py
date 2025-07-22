@@ -84,8 +84,13 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_theme(user_id, text)
         await update_user_state(user_id, "sub")
 
-        subtopics = TOPICS[text] + [await tr(user, "any_sub")]
-        keyboard = [[s] for s in subtopics]
+        # Получаем список подтем (ключи) + ключ для "any_sub"
+        subtopics = TOPICS[text] + ["any_sub"]
+
+        # Переводим подтемы для показа
+        subtopics_translated = [await tr(user, s) for s in subtopics]
+
+        keyboard = [[s] for s in subtopics_translated]
         await update.message.reply_text(
             await tr(user, "choose_sub"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
@@ -95,14 +100,23 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ---------- ШАГ 4: Подтема ----------
     elif state == "sub":
         theme = user.get("theme")
-        valid_subs = TOPICS.get(theme, []) + [await tr(user, "any_sub")]
+        valid_sub_keys = TOPICS.get(theme, []) + ["any_sub"]
+
+        # Переводим подтемы для сравнения
+        valid_subs = [await tr(user, s) for s in valid_sub_keys]
+
         if text not in valid_subs:
             await update.message.reply_text(await tr(user, "wrong_sub"))
             return
 
-        await update_user_sub(user_id, text)
+        # Нужно найти ключ подтемы по переводу, чтобы сохранить в БД
+        sub_key = valid_sub_keys[valid_subs.index(text)]
+
+        await update_user_sub(user_id, sub_key)
         await update_user_state(user_id, "menu")
-        msg = f"{await tr(user, 'confirm_theme', theme=theme)}\n{await tr(user, 'confirm_sub', sub=text)}"
+
+        # Перевод темы и подтемы для подтверждения
+        msg = f"{await tr(user, 'confirm_theme', theme=await tr(user, theme))}\n{await tr(user, 'confirm_sub', sub=await tr(user, sub_key))}"
         await update.message.reply_text(
             msg,
             reply_markup=await kb_after_sub(user)
