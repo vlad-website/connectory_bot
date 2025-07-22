@@ -76,13 +76,19 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ---------- ШАГ 3: Тема ----------
-    elif state == "theme":
-        if text not in TOPICS:
-            await update.message.reply_text(await tr(user, "wrong_theme"))
-            return
+    # Сопоставляем перевод обратно в ключ
+    theme_key = None
+    for key in TOPICS:
+        if await tr(user, key) == text:
+            theme_key = key
+            break
 
-        await update_user_theme(user_id, text)
-        await update_user_state(user_id, "sub")
+    if not theme_key:
+        await update.message.reply_text(await tr(user, "wrong_theme"))
+        return
+
+    await update_user_theme(user_id, theme_key)
+    await update_user_state(user_id, "sub")
 
         # Получаем список подтем (ключи) + ключ для "any_sub"
         subtopics = TOPICS[text] + ["any_sub"]
