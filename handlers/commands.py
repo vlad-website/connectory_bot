@@ -68,7 +68,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     elif state == "theme":
-        keyboard = [[t] for t in TOPICS.keys()]
+        keyboard = [[tr_lang(lang, t)] for t in TOPICS.keys()]
         await update.message.reply_text(
             tr_lang(lang, "pick_theme"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
@@ -78,7 +78,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif state == "sub":
         theme = user.get("theme")
         subtopics = TOPICS.get(theme, []) + [tr_lang(lang, "sub_any")]
-        keyboard = [[s] for s in subtopics]
+        keyboard = [[tr_lang(lang, s)] for s in subtopics]
         await update.message.reply_text(
             tr_lang(lang, "choose_sub"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
