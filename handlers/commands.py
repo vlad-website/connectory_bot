@@ -68,9 +68,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     elif state == "theme":
-        keyboard = [[tr_lang(lang, t)] for t in TOPICS.keys()]
+        # Показываем переводы тем
+        topics_translated = [await tr(user, key) for key in TOPICS.keys()]
+        keyboard = [[t] for t in topics_translated]
+
         await update.message.reply_text(
-            tr_lang(lang, "pick_theme"),
+            await tr(user, "pick_theme"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
         return
