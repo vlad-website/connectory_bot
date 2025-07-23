@@ -11,15 +11,13 @@ from db.user_queries import (
     get_user, create_user, update_user_state,
     update_user_lang
 )
-from core.i18n import tr, tr_lang, tr_user
+from core.i18n import tr, tr_lang
 from core.topics import TOPICS
 from handlers.keyboards import kb_after_sub
 
 logger = logging.getLogger(__name__)
 
-from handlers.keyboards import kb_choose_lang
-
-#---------------- Клавиатура выбора языка ----------------
+# ---------------- Клавиатура выбора языка ----------------
 def kb_choose_lang() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
@@ -57,14 +55,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 🔒 Пользователь не закончил регистрацию — продолжаем с нужного шага
     state = user.get("state")
-    lang = user.get("lang", "ru")
 
     if state == "nickname":
-        await update.message.reply_text(tr_lang(lang, "enter_nick"))
+        await update.message.reply_text(await tr(user, "enter_nick"))
         return
 
     elif state == "gender":
-        await update.message.reply_text(tr_lang(lang, "choose_gender"))
+        await update.message.reply_text(await tr(user, "choose_gender"))
         return
 
     elif state == "theme":
@@ -80,10 +77,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif state == "sub":
         theme = user.get("theme")
-        subtopics = TOPICS.get(theme, []) + [tr_lang(lang, "sub_any")]
-        keyboard = [[tr_lang(lang, s)] for s in subtopics]
+        subtopics = TOPICS.get(theme, []) + ["any_sub"]
+        subtopics_translated = [await tr(user, s) for s in subtopics]
+        keyboard = [[s] for s in subtopics_translated]
+
         await update.message.reply_text(
-            tr_lang(lang, "choose_sub"),
+            await tr(user, "choose_sub"),
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
         return
