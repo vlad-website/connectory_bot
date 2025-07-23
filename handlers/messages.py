@@ -14,8 +14,9 @@ from core.chat_control import end_dialog
 
 logger = logging.getLogger(__name__)
 
-def get_topic_keyboard():
-    return ReplyKeyboardMarkup([[t] for t in TOPICS.keys()], resize_keyboard=True)
+def get_topic_keyboard(user):
+    topic_translated = [await tr(user, t) for t in TOPICS.keys()]
+    return ReplyKeyboardMarkup([[t] for t in topic_translated], resize_keyboard=True)
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.debug("💬 MSG: %s", update.message.text)
@@ -174,21 +175,28 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         elif text == await tr(user, "btn_change_sub"):
-            await remove_from_queue(user_id)
             await update_user_state(user_id, "sub")
-            subtopics = TOPICS[user["theme"]] + [await tr(user, "any_sub")]
+
+            # Переводим ключи подтем
+            sub_keys = TOPICS[user["theme"]] + ["any_sub"]
+            subtopics = [await tr(user, s) for s in sub_keys]
+
             await update.message.reply_text(
-                await tr(user, "pick_sub"),
+                await tr(user, "choose_sub"),
                 reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
             )
             return
 
         elif text == await tr(user, "btn_main_menu"):
-            await remove_from_queue(user_id)
             await update_user_state(user_id, "theme")
+
+            # Перевод тем
+            topic_keys = list(TOPICS.keys())
+            topic_translated = [await tr(user, key) for key in topic_keys]
+
             await update.message.reply_text(
                 await tr(user, "pick_theme"),
-                reply_markup=get_topic_keyboard()
+                reply_markup=await get_topic_keyboard(user)
             )
             return
 
