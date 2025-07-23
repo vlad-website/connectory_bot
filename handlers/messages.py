@@ -76,7 +76,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ---------- ШАГ 3: Тема ----------
-    # Сопоставляем перевод обратно в ключ
+    # ---------- ШАГ 3: Тема ----------
+    if state == "theme":
+        # Сопоставляем перевод обратно в ключ
         theme_key = None
         for key in TOPICS:
             if await tr(user, key) == text:
@@ -91,7 +93,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_state(user_id, "sub")
 
         # Получаем список подтем (ключи) + ключ для "any_sub"
-        subtopics = TOPICS[text] + ["any_sub"]
+        subtopics = TOPICS[theme_key] + ["any_sub"]
 
         # Переводим подтемы для показа
         subtopics_translated = [await tr(user, s) for s in subtopics]
@@ -122,7 +124,10 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_state(user_id, "menu")
 
         # Перевод темы и подтемы для подтверждения
-        msg = f"{await tr(user, 'confirm_theme', theme=await tr(user, theme))}\n{await tr(user, 'confirm_sub', sub=await tr(user, sub_key))}"
+        msg = (
+            f"{await tr(user, 'confirm_theme', theme=await tr(user, theme))}\n"
+            f"{await tr(user, 'confirm_sub', sub=await tr(user, sub_key))}"
+        )
         await update.message.reply_text(
             msg,
             reply_markup=await kb_after_sub(user)
