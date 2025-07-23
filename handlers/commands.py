@@ -38,7 +38,7 @@ language_names = {
 }
 
 # ---------------- /start ----------------
-    async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         user = await get_user(user_id)
 
