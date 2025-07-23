@@ -14,7 +14,7 @@ from core.chat_control import end_dialog
 
 logger = logging.getLogger(__name__)
 
-def get_topic_keyboard(user):
+async def get_topic_keyboard(user):
     topic_translated = [await tr(user, t) for t in TOPICS.keys()]
     return ReplyKeyboardMarkup([[t] for t in topic_translated], resize_keyboard=True)
 
