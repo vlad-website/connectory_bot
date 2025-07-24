@@ -82,7 +82,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Сопоставляем перевод обратно в ключ
         theme_key = None
         for key in TOPICS:
-            if await tr(user, key) == text:
+            if text == await tr(user, key) or text == key:
                 theme_key = key
                 break
 
@@ -159,7 +159,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update_user_state(user_id, "theme")
             await update.message.reply_text(
                 await tr(user, "pick_theme"),
-                reply_markup=get_topic_keyboard()
+                reply_markup=await get_topic_keyboard(user)
             )
             return
 
