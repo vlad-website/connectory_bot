@@ -37,9 +37,10 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ---------- Кнопка «Начать» ----------
     if text == await tr(user, "btn_start"):
         await update_user_state(user_id, "theme")
+        user = await get_user(user_id)
         await update.message.reply_text(
             await tr(user, "pick_theme"),
-            reply_markup=get_topic_keyboard()
+            reply_markup=await get_topic_keyboard(user)
         )
         return
 
@@ -70,6 +71,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update_user_gender(user_id, text)
         await update_user_state(user_id, "theme")
+        
+        user = await get_user(user_id)
+        
         await update.message.reply_text(
             await tr(user, "pick_theme"),
             reply_markup=get_topic_keyboard()
@@ -157,6 +161,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         elif text == await tr(user, "btn_main_menu"):
             await update_user_state(user_id, "theme")
+            user = await get_user(user_id)
             await update.message.reply_text(
                 await tr(user, "pick_theme"),
                 reply_markup=await get_topic_keyboard(user)
@@ -189,6 +194,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         elif text == await tr(user, "btn_main_menu"):
             await update_user_state(user_id, "theme")
+            user = await get_user(user_id)
 
             # Перевод тем
             topic_keys = list(TOPICS.keys())
