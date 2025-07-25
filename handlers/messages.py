@@ -76,7 +76,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         await update.message.reply_text(
             await tr(user, "pick_theme"),
-            reply_markup=get_topic_keyboard()
+            reply_markup=await get_topic_keyboard(user)
         )
         return
 
