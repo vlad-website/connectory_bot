@@ -106,6 +106,8 @@ TEXTS = {
     	"culturology": "🌍 Культурология",
     	"poetry": "📝 Поэзия",
 
+
+	"books": "📖 Книги",
     	"fiction": "📖 Художественная литература",
     	"nonfiction": "📘 Нон-фикшн",
     	"fantasy": "🐉 Фэнтези",
@@ -120,6 +122,8 @@ TEXTS = {
     	"documentary": "📽️ Документалки",
     	"netflix": "📺 Сериалы Netflix",
 
+
+	"music":  "🎵 Музыка",
     	"rock": "🎸 Рок",
     	"rap": "🎤 Рэп / Хип-хоп",
     	"electronic": "🎧 Электронная музыка",
@@ -263,6 +267,8 @@ TEXTS = {
     	"culturology": "🌍 Культурологія",
     	"poetry": "📝 Поезія",
 
+
+	"books": "📖 Книги",
     	"fiction": "📖 Художня література",
     	"nonfiction": "📘 Нон-фікшн",
     	"fantasy": "🐉 Фентезі",
@@ -277,6 +283,8 @@ TEXTS = {
     	"documentary": "📽️ Документальні фільми",
     	"netflix": "📺 Серіали Netflix",
 
+
+	"music": "🎵 Музика",
     	"rock": "🎸 Рок",
     	"rap": "🎤 Реп / Хіп-хоп",
     	"electronic": "🎧 Електронна музика",
@@ -421,6 +429,8 @@ TEXTS = {
         "culturology": "🌍 Culturology",
         "poetry": "📝 Poetry",
 
+
+	"books": "📖 Books",
         "fiction": "📖 Fiction",
         "nonfiction": "📘 Non-fiction",
         "fantasy": "🐉 Fantasy",
@@ -435,6 +445,8 @@ TEXTS = {
         "documentary": "📽️ Documentaries",
         "netflix": "📺 Netflix Series",
 
+
+	"music": "🎵 Music",
         "rock": "🎸 Rock",
         "rap": "🎤 Rap / Hip-hop",
         "electronic": "🎧 Electronic Music",
@@ -579,6 +591,8 @@ TEXTS = {
     	"culturology": "🌍 Culturología",
     	"poetry": "📝 Poesía",
 
+
+	"books": "📖 Libros",
     	"fiction": "📖 Ficción",
     	"nonfiction": "📘 No ficción",
     	"fantasy": "🐉 Fantasía",
@@ -593,6 +607,8 @@ TEXTS = {
     	"documentary": "📽️ Documentales",
     	"netflix": "📺 Series de Netflix",
 
+
+	"music": "🎵 Música",
     	"rock": "🎸 Rock",
     	"rap": "🎤 Rap / Hip-hop",
     	"electronic": "🎧 Música electrónica",
@@ -737,6 +753,8 @@ TEXTS = {
     	"culturology": "🌍 Culturologie",
     	"poetry": "📝 Poésie",
 
+
+	"books": "📖 Livres",
     	"fiction": "📖 Fiction",
     	"nonfiction": "📘 Non-fiction",
     	"fantasy": "🐉 Fantastique",
@@ -751,6 +769,8 @@ TEXTS = {
     	"documentary": "📽️ Documentaires",
     	"netflix": "📺 Séries Netflix",
 
+
+	"music": "🎵 Musique",
     	"rock": "🎸 Rock",
     	"rap": "🎤 Rap / Hip-hop",
     	"electronic": "🎧 Musique électronique",
@@ -894,6 +914,8 @@ TEXTS = {
     	"culturology": "🌍 Kulturologie",
     	"poetry": "📝 Poesie",
 
+
+	"books": "📖 Bücher",
     	"fiction": "📖 Belletristik",
     	"nonfiction": "📘 Sachbuch",
     	"fantasy": "🐉 Fantasy",
@@ -908,6 +930,8 @@ TEXTS = {
     	"documentary": "📽️ Dokumentationen",
     	"netflix": "📺 Netflix-Serien",
 
+
+	"music": "🎵 Musik",
     	"rock": "🎸 Rock",
     	"rap": "🎤 Rap / Hip-Hop",
     	"electronic": "🎧 Elektronische Musik",
