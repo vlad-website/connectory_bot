@@ -29,6 +29,7 @@ TEXTS = {
         "btn_new_partner": "🔍 Новый собеседник",
         "pls_start": "Пожалуйста, отправьте /start.",
         "btn_end": "❌ Завершить диалог",
+	"any_sub": "🔄 Любая подтема",
 
         # Пол
         "gender_male": "Мужской",
@@ -193,6 +194,7 @@ TEXTS = {
         "btn_new_partner": "🔍 Новий співрозмовник",
         "pls_start": "Будь ласка, надішліть /start.",
         "btn_end": "❌ Завершити діалог",
+	"any_sub": "🔄 Будь-яка підтема",
 
         "gender_male": "Чоловіча",
         "gender_female": "Жіноча",
@@ -355,6 +357,7 @@ TEXTS = {
         "btn_new_partner": "🔍 New partner",
         "pls_start": "Please send /start.",
         "btn_end": "❌ End chat",
+	"any_sub": "🔄 Any subtopic",
 
         "gender_male": "Male",
         "gender_female": "Female",
@@ -517,6 +520,7 @@ TEXTS = {
         "btn_new_partner": "🔍 Nueva pareja",
         "pls_start": "Por favor, envía /start.",
         "btn_end": "❌ Terminar chat",
+	"any_sub": "🔄 Cualquier subtema",
 
         "gender_male": "Masculino",
         "gender_female": "Femenino",
@@ -679,6 +683,7 @@ TEXTS = {
         "btn_new_partner": "🔍 Nouveau partenaire",
         "pls_start": "Veuillez envoyer /start.",
         "btn_end": "❌ Terminer la discussion",
+	"any_sub": "🔄 N'importe quel sous-thème",
 
         "gender_male": "Homme",
         "gender_female": "Femme",
@@ -840,6 +845,7 @@ TEXTS = {
         "btn_new_partner": "🔍 Neuer Partner",
         "pls_start": "Bitte sende /start.",
         "btn_end": "❌ Chat beenden",
+	"any_sub": "🔄 Beliebiges Unterthema",
 
         "gender_male": "Männlich",
         "gender_female": "Weiblich",
