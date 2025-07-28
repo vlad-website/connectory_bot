@@ -44,3 +44,17 @@ async def kb_chat(user):
         ],
         resize_keyboard=True
     )
+
+
+
+# 🔹 Создание главного меню
+async def kb_main_menu(user):
+    return ReplyKeyboardMarkup(
+        [
+            [await tr(user, "btn_start_chat")],
+            [await tr(user, "btn_stats"), await tr(user, "btn_settings")],
+            [await tr(user, "btn_suggest"), await tr(user, "btn_get_vip")],
+            [await tr(user, "btn_donate")],
+        ],
+        resize_keyboard=True
+    )
