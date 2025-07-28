@@ -3,7 +3,7 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from handlers.keyboards import kb_after_sub, kb_searching, kb_chat
-from core.i18n import tr
+from core.i18n import tr, tr_lang
 from db.user_queries import (
     get_user, update_user_nickname, update_user_gender,
     update_user_theme, update_user_sub, update_user_state
@@ -25,8 +25,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user = await get_user(user_id)
     if not user:
+        lang_code = (update.effective_user.language_code or "ru").split("-")[0]
         await update.message.reply_text(
-            tr_lang("ru", "pls_start"),
+            tr_lang(lang_code, "pls_start"),
             reply_markup=ReplyKeyboardMarkup([["/start"]], resize_keyboard=True)
         )
         return
@@ -141,6 +142,35 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ---------- Меню ----------
     elif state == "menu":
+        if text == await tr(user, "btn_start_chat"):
+            await update_user_state(user_id, "theme")
+            topics_translated = [await tr(user, key) for key in TOPICS.keys()]
+            keyboard = [[t] for t in topics_translated]
+            await update.message.reply_text(
+                await tr(user, "pick_theme"),
+                reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            )
+            return
+
+        elif text == await tr(user, "btn_stats"):
+            await update.message.reply_text("📊 Статистика пока в разработке.")
+            return
+
+        elif text == await tr(user, "btn_settings"):
+            await update.message.reply_text("⚙️ Настройки пока в разработке.")
+            return
+
+        elif text == await tr(user, "btn_suggest"):
+            await update.message.reply_text("✉️ Напиши, что бы ты хотел улучшить:")
+            return
+
+        elif text == await tr(user, "btn_get_vip"):
+            await update.message.reply_text("💎 VIP-функции скоро появятся!")
+            return
+
+        elif text == await tr(user, "btn_donate"):
+            await update.message.reply_text("💰 Поддержка в разработке. Спасибо за интерес!")
+            return
         if text == await tr(user, "btn_search"):
             await update_user_state(user_id, "searching")
             await update.message.reply_text(
