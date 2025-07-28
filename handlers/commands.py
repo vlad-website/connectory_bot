@@ -99,11 +99,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        # ✅ Всё завершено — меню
-        await update_user_state(user_id, "menu")
+        # ✅ Всё завершено — главное меню
+        await update_user_state(user_id, "main_menu")
+        from handlers.keyboards import kb_main_menu
+
         await update.message.reply_text(
             await tr(user, "main_menu"),
-            reply_markup=await kb_after_sub(user)
+            reply_markup=await kb_main_menu(user)
         )
 
 
