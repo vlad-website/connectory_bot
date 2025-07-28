@@ -39,18 +39,30 @@ language_names = {
 
 # ---------------- /start ----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        user_id = update.effective_user.id
-        user = await get_user(user_id)
+    user_id = update.effective_user.id
+    user = await get_user(user_id)
 
-        if not user or not user.get("lang"):
-            device_lang = (update.effective_user.language_code or "ru").split("-")[0]
-            if device_lang not in language_names:
-                device_lang = "ru"
-            await update.message.reply_text(
-                tr_lang(device_lang, "choose_lang"),
-                reply_markup=kb_choose_lang()
-            )
-            return
+    if not user or not user.get("lang"):
+        # Определяем язык устройства
+        device_lang = (update.effective_user.language_code or "ru").split("-")[0]
+        if device_lang not in language_names:
+            device_lang = "ru"
+
+        # 💬 Приветственное сообщение на языке устройства
+        welcome_messages = {
+            "ru": "👋 Привет! Я бот для общения по интересам. Давай начнём — выбери язык:",
+            "uk": "👋 Привіт! Я бот для спілкування за інтересами. Давай почнемо — обери мову:",
+            "en": "👋 Hi! I'm a bot for chatting by interests. Let's start — choose a language:",
+            "es": "👋 ¡Hola! Soy un bot para chatear según intereses. Empecemos — elige un idioma:",
+            "de": "👋 Hallo! Ich bin ein Bot für Interessens-Chats. Lass uns anfangen – wähle eine Sprache:",
+            "fr": "👋 Salut ! Je suis un bot pour discuter selon tes centres d'intérêt. Commençons — choisis une langue :"
+        }
+
+        await update.message.reply_text(
+            welcome_messages.get(device_lang, welcome_messages["ru"]),
+            reply_markup=kb_choose_lang()
+        )
+        return
 
         # 🔒 Продолжаем регистрацию
         state = user.get("state")
