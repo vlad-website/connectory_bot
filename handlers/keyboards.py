@@ -15,9 +15,12 @@ def kb_choose_lang():
 async def kb_after_sub(user):
     return ReplyKeyboardMarkup(
         [
-            [await tr(user, "btn_search")],
-            [await tr(user, "btn_change_sub")],
-            [await tr(user, "btn_main_menu")],
+            ["btn_start_chat"],
+            ["btn_stats"],
+            ["btn_settings"],
+            ["btn_suggest"],
+            ["btn_get_vip"],
+            ["btn_donate"]
         ],
         resize_keyboard=True
     )
