@@ -133,7 +133,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ---------- Меню ----------
     elif state == "menu":
-        if text == await tr(user, "btn_start_chat"):
+        if text == "btn_start_chat":
             await update_user_state(user_id, "theme")
             await update.message.reply_text(
                 await tr(user, "pick_theme"),
@@ -141,27 +141,27 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        elif text == await tr(user, "btn_stats"):
+        elif text == "btn_stats":
             await update.message.reply_text("📊 Статистика пока в разработке.")
             return
 
-        elif text == await tr(user, "btn_settings"):
+        elif text == "btn_settings":
             await update.message.reply_text("⚙️ Настройки пока в разработке.")
             return
 
-        elif text == await tr(user, "btn_suggest"):
+        elif text == "btn_suggest":
             await update.message.reply_text("✉️ Напиши, что бы ты хотел улучшить:")
             return
 
-        elif text == await tr(user, "btn_get_vip"):
+        elif text == "btn_get_vip":
             await update.message.reply_text("💎 VIP-функции скоро появятся!")
             return
 
-        elif text == await tr(user, "btn_donate"):
+        elif text == "btn_donate":
             await update.message.reply_text("💰 Поддержка в разработке. Спасибо за интерес!")
             return
 
-        elif text == await tr(user, "btn_search"):
+        elif text == "btn_search":
             await update_user_state(user_id, "searching")
             await update.message.reply_text(
                 await tr(user, "searching"),
@@ -170,7 +170,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await add_to_queue(user_id, user["theme"], user["sub"], context)
             return
 
-        elif text == await tr(user, "btn_change_sub"):
+        elif text == "btn_change_sub":
             await update_user_state(user_id, "sub")
             sub_keys = TOPICS[user["theme"]] + ["any_sub"]
             subtopics = [await tr(user, s) for s in sub_keys]
@@ -180,8 +180,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        elif text == await tr(user, "btn_main_menu"):
-            # Просто показываем меню
+        elif text == "btn_main_menu":
             await update.message.reply_text(
                 await tr(user, "main_menu"),
                 reply_markup=await kb_after_sub(user)
