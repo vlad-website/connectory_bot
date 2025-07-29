@@ -2,11 +2,11 @@ import logging
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from handlers.keyboards import kb_after_sub, kb_searching, kb_chat
+from handlers.keyboards import kb_after_sub, kb_searching
 from core.i18n import tr, tr_lang
 from db.user_queries import (
     get_user, update_user_nickname, update_user_gender,
-    update_user_theme, update_user_sub, update_user_state
+    update_user_theme, update_user_sub, update_user_state, create_user
 )
 from core.topics import TOPICS
 from core.matchmaking import add_to_queue, is_in_chat, remove_from_queue
@@ -22,12 +22,16 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.debug("💬 MSG: %s", update.message.text)
     user_id = update.effective_user.id
     text = update.message.text.strip()
-
+    
     user = await get_user(user_id)
     if not user:
+        # Создаём нового пользователя и сохраняем язык устройства
         lang_code = (update.effective_user.language_code or "ru").split("-")[0]
+        await create_user(user_id, lang_code=lang_code)
+        user = await get_user(user_id)
+        await update_user_state(user_id, "nickname")
         await update.message.reply_text(
-            tr_lang(lang_code, "pls_start"),
+            tr_lang(lang_code, "start_nickname"),
             reply_markup=ReplyKeyboardMarkup([["/start"]], resize_keyboard=True)
         )
         return
@@ -35,13 +39,12 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = user["state"]
     logger.debug("STATE=%s TEXT=%s", state, text)
 
-    # ---------- Кнопка «Начать» ----------
-    if text == await tr(user, "btn_start"):
-        await update_user_state(user_id, "theme")
-        user = await get_user(user_id)
+    # ---------- Кнопка «Начать сначала» ----------
+    if text == "/start":
+        await update_user_state(user_id, "menu")
         await update.message.reply_text(
-            await tr(user, "pick_theme"),
-            reply_markup=await get_topic_keyboard(user)
+            await tr(user, "main_menu"),
+            reply_markup=await kb_after_sub(user)
         )
         return
 
@@ -72,9 +75,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update_user_gender(user_id, text)
         await update_user_state(user_id, "theme")
-        
         user = await get_user(user_id)
-        
         await update.message.reply_text(
             await tr(user, "pick_theme"),
             reply_markup=await get_topic_keyboard(user)
@@ -82,9 +83,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ---------- ШАГ 3: Тема ----------
-    # ---------- ШАГ 3: Тема ----------
     if state == "theme":
-        # Сопоставляем перевод обратно в ключ
         theme_key = None
         for key in TOPICS:
             if text == await tr(user, key) or text == key:
@@ -98,10 +97,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_theme(user_id, theme_key)
         await update_user_state(user_id, "sub")
 
-        # Получаем список подтем (ключи) + ключ для "any_sub"
         subtopics = TOPICS[theme_key] + ["any_sub"]
-
-        # Переводим подтемы для показа
         subtopics_translated = [await tr(user, s) for s in subtopics]
 
         keyboard = [[s] for s in subtopics_translated]
@@ -115,21 +111,16 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif state == "sub":
         theme = user.get("theme")
         valid_sub_keys = TOPICS.get(theme, []) + ["any_sub"]
-
-        # Переводим подтемы для сравнения
         valid_subs = [await tr(user, s) for s in valid_sub_keys]
 
         if text not in valid_subs:
             await update.message.reply_text(await tr(user, "wrong_sub"))
             return
 
-        # Нужно найти ключ подтемы по переводу, чтобы сохранить в БД
         sub_key = valid_sub_keys[valid_subs.index(text)]
-
         await update_user_sub(user_id, sub_key)
         await update_user_state(user_id, "menu")
 
-        # Перевод темы и подтемы для подтверждения
         msg = (
             f"{await tr(user, 'confirm_theme', theme=await tr(user, theme))}\n"
             f"{await tr(user, 'confirm_sub', sub=await tr(user, sub_key))}"
@@ -144,11 +135,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif state == "menu":
         if text == await tr(user, "btn_start_chat"):
             await update_user_state(user_id, "theme")
-            topics_translated = [await tr(user, key) for key in TOPICS.keys()]
-            keyboard = [[t] for t in topics_translated]
             await update.message.reply_text(
                 await tr(user, "pick_theme"),
-                reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+                reply_markup=await get_topic_keyboard(user)
             )
             return
 
@@ -171,7 +160,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif text == await tr(user, "btn_donate"):
             await update.message.reply_text("💰 Поддержка в разработке. Спасибо за интерес!")
             return
-        if text == await tr(user, "btn_search"):
+
+        elif text == await tr(user, "btn_search"):
             await update_user_state(user_id, "searching")
             await update.message.reply_text(
                 await tr(user, "searching"),
@@ -182,7 +172,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         elif text == await tr(user, "btn_change_sub"):
             await update_user_state(user_id, "sub")
-            subtopics = TOPICS[user["theme"]] + [await tr(user, "any_sub")]
+            sub_keys = TOPICS[user["theme"]] + ["any_sub"]
+            subtopics = [await tr(user, s) for s in sub_keys]
             await update.message.reply_text(
                 await tr(user, "choose_sub"),
                 reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
@@ -190,11 +181,10 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         elif text == await tr(user, "btn_main_menu"):
-            await update_user_state(user_id, "theme")
-            user = await get_user(user_id)
+            # Просто показываем меню
             await update.message.reply_text(
-                await tr(user, "pick_theme"),
-                reply_markup=await get_topic_keyboard(user)
+                await tr(user, "main_menu"),
+                reply_markup=await kb_after_sub(user)
             )
             return
 
@@ -211,11 +201,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         elif text == await tr(user, "btn_change_sub"):
             await update_user_state(user_id, "sub")
-
-            # Переводим ключи подтем
             sub_keys = TOPICS[user["theme"]] + ["any_sub"]
             subtopics = [await tr(user, s) for s in sub_keys]
-
             await update.message.reply_text(
                 await tr(user, "choose_sub"),
                 reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
@@ -223,16 +210,10 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         elif text == await tr(user, "btn_main_menu"):
-            await update_user_state(user_id, "theme")
-            user = await get_user(user_id)
-
-            # Перевод тем
-            topic_keys = list(TOPICS.keys())
-            topic_translated = [await tr(user, key) for key in topic_keys]
-
+            await update_user_state(user_id, "menu")
             await update.message.reply_text(
-                await tr(user, "pick_theme"),
-                reply_markup=await get_topic_keyboard(user)
+                await tr(user, "main_menu"),
+                reply_markup=await kb_after_sub(user)
             )
             return
 
