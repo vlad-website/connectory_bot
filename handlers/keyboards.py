@@ -15,12 +15,9 @@ def kb_choose_lang():
 async def kb_after_sub(user):
     return ReplyKeyboardMarkup(
         [
-            ["btn_start_chat"],
-            ["btn_stats"],
-            ["btn_settings"],
-            ["btn_suggest"],
-            ["btn_get_vip"],
-            ["btn_donate"]
+            [await tr(user, "btn_search")],         # 🔍 Начать поиск
+            [await tr(user, "btn_change_sub")],     # ♻️ Сменить подтему
+            [await tr(user, "btn_main_menu")]       # 🏠 Главное меню
         ],
         resize_keyboard=True
     )
