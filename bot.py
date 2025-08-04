@@ -11,7 +11,7 @@ from aiohttp import web
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from config import BOT_TOKEN, WEBHOOK_URL, PORT
 from db.init_db import init_db
-from handlers.commands import start
+from handlers.commands import start_handler
 from handlers.messages import message_handler
 
 from handlers.commands import register_handlers
@@ -57,7 +57,7 @@ register_handlers(application)
 PORT = int(os.environ.get("PORT", "10000"))
 
 
-application.add_handler(CommandHandler("start", start))
+application.add_handler(CommandHandler("start", start_handler))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
 register_handlers(application)  # добавлен из верха
