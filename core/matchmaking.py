@@ -29,6 +29,8 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
         other = await get_user(other_id)
         if not other:
             continue
+        if other_id == user_id:
+            continue  # нельзя матчить самого себя
 
         same_theme = other["theme"] == theme
         sub_match = (
@@ -72,6 +74,8 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
             )
             return                              # важен выход после успеха
 
+    if user_id in queue:
+        return  # уже в очереди
     # ❺ Пары нет — ставим в очередь и запускаем таймер
     queue.append(user_id)
     task = asyncio.create_task(retry_search(user_id, theme, sub, context))
