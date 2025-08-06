@@ -206,6 +206,15 @@ TEXTS = {
         "btn_end": "❌ Завершити діалог",
 	"any_sub": "🔄 Будь-яка підтема",
 
+
+	"btn_start_chat": "🔸 Почати спілкування",
+	"btn_stats": "📊 Моя статистика",
+	"btn_settings": "⚙️ Налаштування",
+	"btn_suggest": "✉️ Запропонувати зміни",
+	"btn_get_vip": "💎 Отримати ВІП",
+	"btn_donate": "💰 Стати донатором",
+	"main_menu": "🏠 Головне меню. Оберіть дію:",
+
         "gender_male": "Чоловіча",
         "gender_female": "Жіноча",
         "gender_any": "Неважливо",
@@ -368,6 +377,15 @@ TEXTS = {
         "pls_start": "Please send /start.",
         "btn_end": "❌ End chat",
 	"any_sub": "🔄 Any subtopic",
+
+
+	"btn_start_chat": "🔸 Start Chatting",
+	"btn_stats": "📊 My Stats",
+	"btn_settings": "⚙️ Settings",
+	"btn_suggest": "✉️ Suggest Changes",
+	"btn_get_vip": "💎 Get VIP",
+	"btn_donate": "💰 Become a Donor",
+	"main_menu": "🏠 Main menu. Choose an action:",
 
         "gender_male": "Male",
         "gender_female": "Female",
@@ -532,6 +550,15 @@ TEXTS = {
         "btn_end": "❌ Terminar chat",
 	"any_sub": "🔄 Cualquier subtema",
 
+
+	"btn_start_chat": "🔸 Comenzar a chatear",
+	"btn_stats": "📊 Mis estadísticas",
+	"btn_settings": "⚙️ Configuración",
+	"btn_suggest": "✉️ Sugerir cambios",
+	"btn_get_vip": "💎 Obtener VIP",
+	"btn_donate": "💰 Ser donante",
+	"main_menu": "🏠 Menú principal. Elige una opción:",
+
         "gender_male": "Masculino",
         "gender_female": "Femenino",
         "gender_any": "No importa",
@@ -695,6 +722,14 @@ TEXTS = {
         "btn_end": "❌ Terminer la discussion",
 	"any_sub": "🔄 N'importe quel sous-thème",
 
+	"btn_start_chat": "🔸 Commencer à discuter",
+	"btn_stats": "📊 Mes statistiques",
+	"btn_settings": "⚙️ Paramètres",
+	"btn_suggest": "✉️ Suggérer des modifications",
+	"btn_get_vip": "💎 Obtenir le VIP",
+	"btn_donate": "💰 Devenir donateur",
+	"main_menu": "🏠 Menu principal. Choisissez une action :",
+
         "gender_male": "Homme",
         "gender_female": "Femme",
         "gender_any": "Peu importe",
@@ -856,6 +891,15 @@ TEXTS = {
         "pls_start": "Bitte sende /start.",
         "btn_end": "❌ Chat beenden",
 	"any_sub": "🔄 Beliebiges Unterthema",
+
+
+	"btn_start_chat": "🔸 Chat starten",
+	"btn_stats": "📊 Meine Statistik",
+	"btn_settings": "⚙️ Einstellungen",
+	"btn_suggest": "✉️ Änderungen vorschlagen",
+	"btn_get_vip": "💎 VIP erhalten",
+	"btn_donate": "💰 Spender werden",
+	"main_menu": "🏠 Hauptmenü. Wähle eine Aktion:",
 
         "gender_male": "Männlich",
         "gender_female": "Weiblich",
