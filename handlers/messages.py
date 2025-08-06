@@ -191,7 +191,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await remove_from_queue(user_id)
             await update_user_state(user_id, "menu_after_sub")
             await update.message.reply_text(
-                await tr(user, "search_stopped"),
+                await tr(user, "search_stop"),
                 reply_markup=await kb_after_sub(user)
             )
             return
