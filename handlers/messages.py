@@ -197,6 +197,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         elif text == await tr(user, "btn_change_sub"):
+            await remove_from_queue(user_id)
+            await update.message.reply_text(await tr(user, "search_stop"))
+            
             await update_user_state(user_id, "sub")
             sub_keys = TOPICS[user["theme"]] + ["any_sub"]
             subtopics = [await tr(user, s) for s in sub_keys]
@@ -207,6 +210,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         elif text == await tr(user, "btn_main_menu"):
+            await remove_from_queue(user_id)
+            await update.message.reply_text(await tr(user, "search_stop"))
+    
             await update_user_state(user_id, "menu")
             user = await get_user(user_id)
             from handlers.keyboards import kb_main_menu
