@@ -120,6 +120,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         subtopics = TOPICS[theme_key] + ["any_sub"]
         subtopics_translated = [await tr(user, s) for s in subtopics]
         keyboard = [[s] for s in subtopics_translated]
+        keyboard.append([await tr(user, "btn_main_menu")])
 
         await update.message.reply_text(
             await tr(user, "choose_sub"),
