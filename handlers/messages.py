@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 async def get_topic_keyboard(user):
     topic_translated = [await tr(user, t) for t in TOPICS.keys()]
+    keyboard = [[t] for t in topic_translated]
+    keyboard.append([await tr(user, "btn_main_menu")])
     return ReplyKeyboardMarkup([[t] for t in topic_translated], resize_keyboard=True)
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
