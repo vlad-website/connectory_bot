@@ -104,6 +104,16 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Шаг 3: Тема
     if state == "theme":
+        if text == await tr(user, "btn_main_menu"):
+            await update_user_state(user_id, "menu")
+            user = await get_user(user_id)
+            from handlers.keyboards import kb_main_menu
+            await update.message.reply_text(
+                await tr(user, "main_menu"),
+                reply_markup=await kb_main_menu(user)
+            )
+            return
+            
         theme_key = None
         for key in TOPICS:
             if text == await tr(user, key) or text == key:
@@ -130,6 +140,16 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Шаг 4: Подтема
     if state == "sub":
+        if text == await tr(user, "btn_main_menu"):
+            await update_user_state(user_id, "menu")
+            user = await get_user(user_id)
+            from handlers.keyboards import kb_main_menu
+            await update.message.reply_text(
+                await tr(user, "main_menu"),
+                reply_markup=await kb_main_menu(user)
+            )
+            return
+        
         theme = user.get("theme")
         valid_sub_keys = TOPICS.get(theme, []) + ["any_sub"]
         valid_subs = [await tr(user, s) for s in valid_sub_keys]
