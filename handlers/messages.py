@@ -33,9 +33,20 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=ReplyKeyboardMarkup([["/start"]], resize_keyboard=True)
         )
         return
+    
 
     state = user["state"]
     logger.debug(f"STATE={state} TEXT={text}")
+
+    # 🛑 Ранняя обработка кнопки "Остановить поиск"
+    if text == await tr(user, "btn_stop"):
+        await remove_from_queue(user_id)
+        await update_user_state(user_id, "menu_after_sub")
+        await update.message.reply_text(
+            await tr(user, "search_stopped"),
+            reply_markup=await kb_after_sub(user)
+        )
+        return
 
     # Шаг 1: Никнейм
     if state == "nickname":
