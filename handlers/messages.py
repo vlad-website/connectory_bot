@@ -222,38 +222,50 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Поиск партнера
     if state == "searching":
         if text == await tr(user, "btn_stop"):
+            # Убираем из очереди
             await remove_from_queue(user_id)
+
+            # Обновляем стейт
             await update_user_state(user_id, "menu_after_sub")
+
+            # Получаем обновлённого пользователя, чтобы клавиатура формировалась правильно
             user = await get_user(user_id)
+
+            # Отправляем сообщение с новой клавиатурой
             await update.message.reply_text(
                 await tr(user, "search_stopped"),
                 reply_markup=await kb_after_sub(user)
             )
-            await update_user_state(user_id, "menu_after_sub")
+            # await update_user_state(user_id, "menu_after_sub")
             return
 
         elif text == await tr(user, "btn_change_sub"):
             await remove_from_queue(user_id)
-            await update.message.reply_text(await tr(user, "search_stopped"))
-            
+            #await update.message.reply_text(await tr(user, "search_stopped"))
             await update_user_state(user_id, "sub")
+            user = await get_user(user_id)
+            
+            #await update_user_state(user_id, "sub")
             sub_keys = TOPICS[user["theme"]] + ["any_sub"]
             subtopics = [await tr(user, s) for s in sub_keys]
             await update.message.reply_text(
-                await tr(user, "choose_sub"),
+                
+                #await tr(user, "choose_sub"),
+                await tr(user, "search_stopped"),
                 reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
             )
             return
 
         elif text == await tr(user, "btn_main_menu"):
             await remove_from_queue(user_id)
-            await update.message.reply_text(await tr(user, "search_stopped"))
+            #await update.message.reply_text(await tr(user, "search_stopped"))
     
             await update_user_state(user_id, "menu")
             user = await get_user(user_id)
             from handlers.keyboards import kb_main_menu
             await update.message.reply_text(
-                await tr(user, "main_menu"),
+                #await tr(user, "main_menu"),
+                await tr(user, "search_stopped"),
                 reply_markup=await kb_main_menu(user)
             )
             return
