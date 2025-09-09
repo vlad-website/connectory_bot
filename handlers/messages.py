@@ -221,43 +221,42 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Поиск партнера
     if state == "searching":
-        # Нажали "Остановить поиск"
         if text == await tr(user, "btn_stop"):
             await remove_from_queue(user_id)
             await update_user_state(user_id, "menu_after_sub")
-            user = await get_user(user_id)
             await update.message.reply_text(
                 await tr(user, "search_stopped"),
                 reply_markup=await kb_after_sub(user)
             )
+            await update_user_state(user_id, "menu_after_sub")
             return
 
-        # Нажали "Сменить подтему"
         elif text == await tr(user, "btn_change_sub"):
             await remove_from_queue(user_id)
+            await update.message.reply_text(await tr(user, "search_stopped"))
+
             await update_user_state(user_id, "sub")
-            user = await get_user(user_id)
+            sub_keys = TOPICS[user["theme"]] + ["any_sub"]
+            subtopics = [await tr(user, s) for s in sub_keys]
             await update.message.reply_text(
-                await tr(user, "search_stopped"),
-                reply_markup=ReplyKeyboardMarkup(
-                    [[await tr(user, s)] for s in TOPICS[user["theme"]] + ["any_sub"]],
-                    resize_keyboard=True
-                )
+                await tr(user, "choose_sub"),
+                reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
             )
             return
 
-        # Нажали "Главное меню"
         elif text == await tr(user, "btn_main_menu"):
             await remove_from_queue(user_id)
+            await update.message.reply_text(await tr(user, "search_stopped"))
+
             await update_user_state(user_id, "menu")
             user = await get_user(user_id)
+            from handlers.keyboards import kb_main_menu
             await update.message.reply_text(
-                await tr(user, "search_stopped"),
+                await tr(user, "main_menu"),
                 reply_markup=await kb_main_menu(user)
             )
             return
 
-        # Нажали "Поддержать проект"
         elif text == await tr(user, "btn_support"):
             await update.message.reply_text(
                 await tr(user, "support_thanks"),
@@ -265,7 +264,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        # Любое другое сообщение во время поиска
         await update.message.reply_text(await tr(user, "default_searching"))
         return
 
