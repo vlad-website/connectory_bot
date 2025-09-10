@@ -251,6 +251,13 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
+        elif text == await tr(user, "btn_support"):
+            await update.message.reply_text(
+                await tr(user, "support_thanks"),
+                reply_markup=await kb_after_sub(user)
+            )
+            return
+
     # Поиск партнера (внимание: обработка STOP вынесена в ранний блок выше)
     if state == "searching":
         # смена подтемы во время поиска
