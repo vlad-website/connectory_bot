@@ -222,13 +222,17 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Поиск партнера
     if state == "searching":
         if text == await tr(user, "btn_stop"):
+            # Убираем из очереди
             await remove_from_queue(user_id)
+            # Возвращаем в меню после выбора подтемы
             await update_user_state(user_id, "menu_after_sub")
+            user = await get_user(user_id)
+
+            # Отправляем сообщение и показываем клавиатуру с "Начать поиск"
             await update.message.reply_text(
                 await tr(user, "search_stopped"),
                 reply_markup=await kb_after_sub(user)
             )
-            await update_user_state(user_id, "menu_after_sub")
             return
 
         elif text == await tr(user, "btn_change_sub"):
@@ -264,8 +268,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        await update.message.reply_text(await tr(user, "default_searching"))
-        return
+    # Любое другое сообщение
+    await update.message.reply_text(await tr(user, "default_searching"))
+    return
 
     # Чат
     if await is_in_chat(user_id):
