@@ -1,5 +1,6 @@
 import logging
-from telegram import Update, ReplyKeyboardMarkup
+import asyncio
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
 
 from handlers.keyboards import kb_after_sub, kb_searching
@@ -9,7 +10,7 @@ from db.user_queries import (
     update_user_theme, update_user_sub, update_user_state, create_user
 )
 from core.topics import TOPICS
-from core.matchmaking import add_to_queue, is_in_chat, remove_from_queue
+from core.matchmaking import add_to_queue, is_in_chat, remove_from_queue, active_search_tasks, queue
 from core.chat_control import end_dialog
 
 logger = logging.getLogger(__name__)
@@ -20,10 +21,11 @@ async def get_topic_keyboard(user):
     keyboard.append([await tr(user, "btn_main_menu")])
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
+
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.debug("💬 MSG: %s", update.message.text)
     user_id = update.effective_user.id
-    text = update.message.text.strip()
+    text = (update.message.text or "").strip()
 
     user = await get_user(user_id)
     if not user:
@@ -33,10 +35,60 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=ReplyKeyboardMarkup([["/start"]], resize_keyboard=True)
         )
         return
-    
 
-    state = user["state"]
-    logger.debug(f"STATE={state} TEXT={text}")
+    state = user.get("state")
+    logger.debug(f"STATE={state} TEXT={text!r} USER_LANG={user.get('lang')}")
+
+    # --- Ранняя и надёжная обработка "Остановить поиск" ---
+    # Сработает независимо от состояния: убираем из очереди, отменяем таск,
+    # меняем стейт и гарантированно отправляем сообщение + новую клавиатуру.
+    try:
+        stop_label = await tr(user, "btn_stop") or "⛔ Остановить поиск"
+    except Exception:
+        stop_label = "⛔ Остановить поиск"
+
+    try:
+        stopped_msg = await tr(user, "search_stopped") or "❌ Поиск остановлен."
+    except Exception:
+        stopped_msg = "❌ Поиск остановлен."
+
+    # нормализуем сравнение (убираем пробелы вокруг)
+    if text and text.strip() == stop_label.strip():
+        logger.info("User %s pressed STOP button (state=%s)", user_id, state)
+
+        # удаляем из очереди
+        await remove_from_queue(user_id)
+
+        # отменяем отложенную таску retry_search если есть
+        task = active_search_tasks.pop(user_id, None)
+        if task:
+            try:
+                task.cancel()
+            except Exception:
+                logger.exception("Failed to cancel search task for user %s", user_id)
+
+        # обновляем состояние
+        await update_user_state(user_id, "menu_after_sub")
+        user = await get_user(user_id)  # обновлённый user для tr/kb
+
+        # сначала убираем старую клавиатуру (иногда клиенты не обновляют иначе)
+        try:
+            await context.bot.send_message(chat_id=user_id, text=stopped_msg, reply_markup=ReplyKeyboardRemove())
+        except Exception:
+            logger.exception("Failed sending ReplyKeyboardRemove to %s", user_id)
+
+        # короткая пауза, чтобы клиент применил удаление клавиатуры
+        await asyncio.sleep(0.05)
+
+        # отправляем подтверждение + новую клавиатуру (с "Начать поиск")
+        try:
+            await context.bot.send_message(chat_id=user_id, text=stopped_msg, reply_markup=await kb_after_sub(user))
+        except Exception:
+            logger.exception("Failed sending stopped message with kb_after_sub to %s", user_id)
+
+        return
+
+    # ----------------- Обычная логика состояний -----------------
 
     # Шаг 1: Никнейм
     if state == "nickname":
@@ -64,9 +116,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         await update_user_gender(user_id, text)
-        # Переходим в меню после выбора пола
         await update_user_state(user_id, "menu")
-        user = await get_user(user_id)  # обновить данные
+        user = await get_user(user_id)
         from handlers.keyboards import kb_main_menu
         await update.message.reply_text(
             await tr(user, "main_menu"),
@@ -116,7 +167,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=await kb_main_menu(user)
             )
             return
-            
+
         theme_key = None
         for key in TOPICS:
             if text == await tr(user, key) or text == key:
@@ -152,7 +203,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=await kb_main_menu(user)
             )
             return
-        
+
         theme = user.get("theme")
         valid_sub_keys = TOPICS.get(theme, []) + ["any_sub"]
         valid_subs = [await tr(user, s) for s in valid_sub_keys]
@@ -171,7 +222,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"{await tr(user, 'confirm_theme', theme=await tr(user, theme))}\n"
             f"{await tr(user, 'confirm_sub', sub=await tr(user, sub_key))}"
         )
-        from handlers.keyboards import kb_after_sub
         await update.message.reply_text(
             msg,
             reply_markup=await kb_after_sub(user)
@@ -209,50 +259,41 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-    # Поиск партнера
+    # Поиск партнера (внимание: обработка STOP вынесена в ранний блок выше)
     if state == "searching":
-        if text == await tr(user, "btn_stop"):
+        # смена подтемы во время поиска
+        if text == await tr(user, "btn_change_sub"):
             await remove_from_queue(user_id)
-            await update_user_state(user_id, "menu_after_sub")
-            await update.message.reply_text(
-                await tr(user, "search_stopped"),
-                reply_markup=await kb_after_sub(user)
-            )
-            return
-
-        elif text == await tr(user, "btn_change_sub"):
-            await remove_from_queue(user_id)
-            await update.message.reply_text(
-                await tr(user, "search_stopped"),
-                reply_markup=ReplyKeyboardMarkup(
-                    [[await tr(user, s)] for s in TOPICS[user["theme"]] + ["any_sub"]],
-                    resize_keyboard=True
-                )
-            )
             await update_user_state(user_id, "sub")
+            user = await get_user(user_id)
+            sub_keys = TOPICS[user["theme"]] + ["any_sub"]
+            subtopics = [await tr(user, s) for s in sub_keys]
             await update.message.reply_text(
-                await tr(user, "choose_sub")
+                await tr(user, "choose_sub"),
+                reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
             )
             return
 
-        elif text == await tr(user, "btn_main_menu"):
+        # главный меню во время поиска
+        if text == await tr(user, "btn_main_menu"):
             await remove_from_queue(user_id)
             await update_user_state(user_id, "menu")
             user = await get_user(user_id)
             from handlers.keyboards import kb_main_menu
             await update.message.reply_text(
-                await tr(user, "main_menu"),
+                await tr(user, "search_stopped"),
                 reply_markup=await kb_main_menu(user)
             )
             return
 
-        elif text == await tr(user, "btn_support"):
+        if text == await tr(user, "btn_support"):
             await update.message.reply_text(
                 await tr(user, "support_thanks"),
                 reply_markup=await kb_searching(user)
             )
             return
 
+        # любой другой текст во время поиска
         await update.message.reply_text(await tr(user, "default_searching"))
         return
 
