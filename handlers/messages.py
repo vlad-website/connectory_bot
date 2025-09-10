@@ -38,16 +38,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = user["state"]
     logger.debug(f"STATE={state} TEXT={text}")
 
-    # 🛑 Ранняя обработка кнопки "Остановить поиск"
-    if text == await tr(user, "btn_stop"):
-        await remove_from_queue(user_id)
-        await update_user_state(user_id, "menu_after_sub")
-        await update.message.reply_text(
-            await tr(user, "search_stopped"),
-            reply_markup=await kb_after_sub(user)
-        )
-        return
-
     # Шаг 1: Никнейм
     if state == "nickname":
         await update_user_nickname(user_id, text)
@@ -222,13 +212,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Поиск партнера
     if state == "searching":
         if text == await tr(user, "btn_stop"):
-            # Убираем из очереди
             await remove_from_queue(user_id)
-            # Возвращаем в меню после выбора подтемы
             await update_user_state(user_id, "menu_after_sub")
-            user = await get_user(user_id)
-
-            # Отправляем сообщение и показываем клавиатуру с "Начать поиск"
             await update.message.reply_text(
                 await tr(user, "search_stopped"),
                 reply_markup=await kb_after_sub(user)
@@ -268,9 +253,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-    # Любое другое сообщение
-    await update.message.reply_text(await tr(user, "default_searching"))
-    return
+        await update.message.reply_text(await tr(user, "default_searching"))
+        return
 
     # Чат
     if await is_in_chat(user_id):
