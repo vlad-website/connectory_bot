@@ -71,14 +71,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_state(user_id, "menu_after_sub")
         user = await get_user(user_id)  # обновлённый user для tr/kb
 
-        # сначала убираем старую клавиатуру (иногда клиенты не обновляют иначе)
-        try:
-            await context.bot.send_message(chat_id=user_id, text=stopped_msg, reply_markup=ReplyKeyboardRemove())
-        except Exception:
-            logger.exception("Failed sending ReplyKeyboardRemove to %s", user_id)
-
-        # короткая пауза, чтобы клиент применил удаление клавиатуры
-        await asyncio.sleep(0.05)
 
         # отправляем подтверждение + новую клавиатуру (с "Начать поиск")
         try:
