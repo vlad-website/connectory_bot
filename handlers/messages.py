@@ -129,24 +129,44 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         elif text == await tr(user, "btn_stats"):
-            await update.message.reply_text("📊 Статистика пока в разработке.")
+            await update.message.reply_text(await tr(user, "stats_in_progress"))
             return
-
+        
         elif text == await tr(user, "btn_settings"):
-            await update.message.reply_text("⚙️ Настройки пока в разработке.")
+            await update.message.reply_text(await tr(user, "settings_in_progress"))
             return
-
+        
         elif text == await tr(user, "btn_suggest"):
-            await update.message.reply_text("✉️ Напиши, что бы ты хотел улучшить:")
+            await update_user_state(user_id, "suggest")
+            await update.message.reply_text(
+                await tr(user, "pls_suggest")
+            )
             return
-
+        
         elif text == await tr(user, "btn_get_vip"):
-            await update.message.reply_text("💎 VIP-функции скоро появятся!")
+            await update.message.reply_text(await tr(user, "vip_soon"))
+            return
+        
+        elif text == await tr(user, "btn_donate"):
+            await update.message.reply_text(await tr(user, "donate_thanks"))
             return
 
-        elif text == await tr(user, "btn_donate"):
-            await update.message.reply_text("💰 Поддержка в разработке. Спасибо за интерес!")
-            return
+
+    # Обработка предложений
+    if state == "suggest":
+        admin_id = 491000185  # сюда твой Telegram ID
+        await context.bot.send_message(
+            chat_id=admin_id,
+            text=f"📩 Новое предложение от @{update.effective_user.username or user_id}:\n\n{text}"
+        )
+        await update.message.reply_text(await tr(user, "suggest_thanks"))
+        await update_user_state(user_id, "menu")
+        from handlers.keyboards import kb_main_menu
+        await update.message.reply_text(
+            await tr(user, "main_menu"),
+            reply_markup=await kb_main_menu(user)
+        )
+        return
 
     # Шаг 3: Тема
     if state == "theme":
