@@ -35,10 +35,10 @@ TEXTS = {
 		"settings_in_progress": "⚙️ Настройки пока в разработке.",
 		"suggest_prompt": "✉️ Напиши, что бы ты хотел улучшить:",
 		"vip_soon": "💎 VIP-функции скоро появятся!",
-		"donate_thanks": "💰 Поддержка в разработке. Спасибо за интерес!"
+		"donate_thanks": "💰 Поддержка в разработке. Спасибо за интерес!",
 
 		# Перевод после отправки предложения
-		"suggest_thanks": "✅ Спасибо за предложение! Мы его рассмотрим."
+		"suggest_thanks": "✅ Спасибо за предложение! Мы его рассмотрим.",
 
 
         # Кнопки
@@ -232,9 +232,9 @@ TEXTS = {
 		"settings_in_progress": "⚙️ Налаштування ще в розробці.",
 		"suggest_prompt": "✉️ Напиши, що ти хотів би покращити:",
 		"vip_soon": "💎 VIP-функції з'являться незабаром!",
-		"donate_thanks": "💰 Підтримка в розробці. Дякуємо за інтерес!"
+		"donate_thanks": "💰 Підтримка в розробці. Дякуємо за інтерес!",
 
-		"suggest_thanks": "✅ Дякуємо за пропозицію! Ми її розглянемо."
+		"suggest_thanks": "✅ Дякуємо за пропозицію! Ми її розглянемо.",
 
         "gender_male": "Чоловіча",
         "gender_female": "Жіноча",
@@ -412,9 +412,9 @@ TEXTS = {
 		"settings_in_progress": "⚙️ Settings are still in development.",
 		"suggest_prompt": "✉️ Write what you’d like to improve:",
 		"vip_soon": "💎 VIP features coming soon!",
-		"donate_thanks": "💰 Support is in development. Thank you for your interest!"
+		"donate_thanks": "💰 Support is in development. Thank you for your interest!",
 
-		"suggest_thanks": "✅ Thanks for your suggestion! We'll review it."
+		"suggest_thanks": "✅ Thanks for your suggestion! We'll review it.",
 		
 
         "gender_male": "Male",
@@ -595,7 +595,7 @@ TEXTS = {
 		"settings_in_progress": "⚙️ La configuración aún está en desarrollo.",
 		"suggest_prompt": "✉️ Escribe lo que te gustaría mejorar:",
 		"vip_soon": "💎 ¡Las funciones VIP estarán disponibles pronto!",
-		"donate_thanks": "💰 El soporte está en desarrollo. ¡Gracias por tu interés!"
+		"donate_thanks": "💰 El soporte está en desarrollo. ¡Gracias por tu interés!",
 		
 
         "gender_male": "Masculino",
@@ -773,7 +773,7 @@ TEXTS = {
 		"settings_in_progress": "⚙️ Les paramètres sont encore en développement.",
 		"suggest_prompt": "✉️ Écris ce que tu aimerais améliorer :",
 		"vip_soon": "💎 Les fonctionnalités VIP arrivent bientôt !",
-		"donate_thanks": "💰 Le soutien est en développement. Merci pour ton intérêt !"
+		"donate_thanks": "💰 Le soutien est en développement. Merci pour ton intérêt !",
 
 		"suggest_thanks": "✅ Merci pour votre suggestion ! Nous l'examinerons.",
 
@@ -953,7 +953,7 @@ TEXTS = {
 		"settings_in_progress": "⚙️ Einstellungen befinden sich noch in Entwicklung.",
 		"suggest_prompt": "✉️ Schreibe, was du verbessern möchtest:",
 		"vip_soon": "💎 VIP-Funktionen kommen bald!",
-		"donate_thanks": "💰 Unterstützung in Entwicklung. Vielen Dank für dein Interesse!"
+		"donate_thanks": "💰 Unterstützung in Entwicklung. Vielen Dank für dein Interesse!",
 
 		"suggest_thanks": "✅ Danke für den Vorschlag! Wir werden ihn prüfen.",
 		
