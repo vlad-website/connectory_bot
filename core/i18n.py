@@ -33,7 +33,7 @@ TEXTS = {
 		# Переводы сообщений кнопок меню
 		"stats_in_progress": "📊 Статистика пока в разработке.",
 		"settings_in_progress": "⚙️ Настройки пока в разработке.",
-		"suggest_prompt": "✉️ Напиши, что бы ты хотел улучшить:",
+		"pls_suggest": "✉️ Напиши, что бы ты хотел улучшить:",
 		"vip_soon": "💎 VIP-функции скоро появятся!",
 		"donate_thanks": "💰 Поддержка в разработке. Спасибо за интерес!",
 
@@ -230,7 +230,7 @@ TEXTS = {
 
 		"stats_in_progress": "📊 Статистика ще в розробці.",
 		"settings_in_progress": "⚙️ Налаштування ще в розробці.",
-		"suggest_prompt": "✉️ Напиши, що ти хотів би покращити:",
+		"pls_suggest": "✉️ Напиши, що ти хотів би покращити:",
 		"vip_soon": "💎 VIP-функції з'являться незабаром!",
 		"donate_thanks": "💰 Підтримка в розробці. Дякуємо за інтерес!",
 
@@ -410,7 +410,7 @@ TEXTS = {
 
 		"stats_in_progress": "📊 Statistics are still in development.",
 		"settings_in_progress": "⚙️ Settings are still in development.",
-		"suggest_prompt": "✉️ Write what you’d like to improve:",
+		"pls_suggest": "✉️ Write what you’d like to improve:",
 		"vip_soon": "💎 VIP features coming soon!",
 		"donate_thanks": "💰 Support is in development. Thank you for your interest!",
 
@@ -593,7 +593,7 @@ TEXTS = {
 
 		"stats_in_progress": "📊 Las estadísticas aún están en desarrollo.",
 		"settings_in_progress": "⚙️ La configuración aún está en desarrollo.",
-		"suggest_prompt": "✉️ Escribe lo que te gustaría mejorar:",
+		"pls_suggest": "✉️ Escribe lo que te gustaría mejorar:",
 		"vip_soon": "💎 ¡Las funciones VIP estarán disponibles pronto!",
 		"donate_thanks": "💰 El soporte está en desarrollo. ¡Gracias por tu interés!",
 		
@@ -771,7 +771,7 @@ TEXTS = {
 
 		"stats_in_progress": "📊 Les statistiques sont encore en développement.",
 		"settings_in_progress": "⚙️ Les paramètres sont encore en développement.",
-		"suggest_prompt": "✉️ Écris ce que tu aimerais améliorer :",
+		"pls_suggest": "✉️ Écris ce que tu aimerais améliorer :",
 		"vip_soon": "💎 Les fonctionnalités VIP arrivent bientôt !",
 		"donate_thanks": "💰 Le soutien est en développement. Merci pour ton intérêt !",
 
@@ -951,7 +951,7 @@ TEXTS = {
 
 		"stats_in_progress": "📊 Statistiken befinden sich noch in Entwicklung.",
 		"settings_in_progress": "⚙️ Einstellungen befinden sich noch in Entwicklung.",
-		"suggest_prompt": "✉️ Schreibe, was du verbessern möchtest:",
+		"pls_suggest": "✉️ Schreibe, was du verbessern möchtest:",
 		"vip_soon": "💎 VIP-Funktionen kommen bald!",
 		"donate_thanks": "💰 Unterstützung in Entwicklung. Vielen Dank für dein Interesse!",
 
