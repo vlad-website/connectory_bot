@@ -37,6 +37,9 @@ TEXTS = {
 		"vip_soon": "💎 VIP-функции скоро появятся!",
 		"donate_thanks": "💰 Поддержка в разработке. Спасибо за интерес!"
 
+		# Перевод после отправки предложения
+		"suggest_thanks": "✅ Спасибо за предложение! Мы его рассмотрим."
+
 
         # Кнопки
         "btn_start": "Начать",
@@ -230,7 +233,8 @@ TEXTS = {
 		"suggest_prompt": "✉️ Напиши, що ти хотів би покращити:",
 		"vip_soon": "💎 VIP-функції з'являться незабаром!",
 		"donate_thanks": "💰 Підтримка в розробці. Дякуємо за інтерес!"
-		
+
+		"suggest_thanks": "✅ Дякуємо за пропозицію! Ми її розглянемо."
 
         "gender_male": "Чоловіча",
         "gender_female": "Жіноча",
@@ -409,6 +413,8 @@ TEXTS = {
 		"suggest_prompt": "✉️ Write what you’d like to improve:",
 		"vip_soon": "💎 VIP features coming soon!",
 		"donate_thanks": "💰 Support is in development. Thank you for your interest!"
+
+		"suggest_thanks": "✅ Thanks for your suggestion! We'll review it."
 		
 
         "gender_male": "Male",
@@ -582,6 +588,8 @@ TEXTS = {
 		"btn_get_vip": "💎 Obtener VIP",
 		"btn_donate": "💰 Ser donante",
 		"main_menu": "🏠 Menú principal. Elige una opción:",
+
+		"suggest_thanks": "✅ ¡Gracias por tu sugerencia! La revisaremos.",
 
 		"stats_in_progress": "📊 Las estadísticas aún están en desarrollo.",
 		"settings_in_progress": "⚙️ La configuración aún está en desarrollo.",
@@ -767,6 +775,8 @@ TEXTS = {
 		"vip_soon": "💎 Les fonctionnalités VIP arrivent bientôt !",
 		"donate_thanks": "💰 Le soutien est en développement. Merci pour ton intérêt !"
 
+		"suggest_thanks": "✅ Merci pour votre suggestion ! Nous l'examinerons.",
+
 		
         "gender_male": "Homme",
         "gender_female": "Femme",
@@ -944,6 +954,8 @@ TEXTS = {
 		"suggest_prompt": "✉️ Schreibe, was du verbessern möchtest:",
 		"vip_soon": "💎 VIP-Funktionen kommen bald!",
 		"donate_thanks": "💰 Unterstützung in Entwicklung. Vielen Dank für dein Interesse!"
+
+		"suggest_thanks": "✅ Danke für den Vorschlag! Wir werden ihn prüfen.",
 		
 
         "gender_male": "Männlich",
