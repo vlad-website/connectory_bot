@@ -19,16 +19,23 @@ TEXTS = {
         "support_thanks": "🙏 Спасибо за поддержку!\n(Здесь будет ссылка на донат)",
 
 
-	"search_stop": "❌ Поиск остановлен.",
+		"search_stop": "❌ Поиск остановлен.",
 
-	# Главное меню
-	"btn_start_chat": "🔸 Начать общение",
-	"btn_stats": "📊 Моя статистика",
-	"btn_settings": "⚙️ Настройки",
-	"btn_suggest": "✉️ Предложить изменения",
-	"btn_get_vip": "💎 Получить Вип",
-	"btn_donate": "💰 Стать донатёром",
-	"main_menu": "🏠 Главное меню. Выберите действие:",
+		# Главное меню
+		"btn_start_chat": "🔸 Начать общение",
+		"btn_stats": "📊 Моя статистика",
+		"btn_settings": "⚙️ Настройки",
+		"btn_suggest": "✉️ Предложить изменения",
+		"btn_get_vip": "💎 Получить Вип",
+		"btn_donate": "💰 Стать донатёром",
+		"main_menu": "🏠 Главное меню. Выберите действие:",
+
+		# Переводы сообщений кнопок меню
+		"stats_in_progress": "📊 Статистика пока в разработке.",
+		"settings_in_progress": "⚙️ Настройки пока в разработке.",
+		"suggest_prompt": "✉️ Напиши, что бы ты хотел улучшить:",
+		"vip_soon": "💎 VIP-функции скоро появятся!",
+		"donate_thanks": "💰 Поддержка в разработке. Спасибо за интерес!"
 
 
         # Кнопки
@@ -42,7 +49,7 @@ TEXTS = {
         "btn_new_partner": "🔍 Новый собеседник",
         "pls_start": "Пожалуйста, отправьте /start.",
         "btn_end": "❌ Завершить диалог",
-	"any_sub": "🔄 Любая подтема",
+		"any_sub": "🔄 Любая подтема",
 
         # Пол
         "gender_male": "Мужской",
@@ -210,13 +217,20 @@ TEXTS = {
 	"any_sub": "🔄 Будь-яка підтема",
 
 
-	"btn_start_chat": "🔸 Почати спілкування",
-	"btn_stats": "📊 Моя статистика",
-	"btn_settings": "⚙️ Налаштування",
-	"btn_suggest": "✉️ Запропонувати зміни",
-	"btn_get_vip": "💎 Отримати ВІП",
-	"btn_donate": "💰 Стати донатором",
-	"main_menu": "🏠 Головне меню. Оберіть дію:",
+		"btn_start_chat": "🔸 Почати спілкування",
+		"btn_stats": "📊 Моя статистика",
+		"btn_settings": "⚙️ Налаштування",
+		"btn_suggest": "✉️ Запропонувати зміни",
+		"btn_get_vip": "💎 Отримати ВІП",
+		"btn_donate": "💰 Стати донатором",
+		"main_menu": "🏠 Головне меню. Оберіть дію:",
+
+		"stats_in_progress": "📊 Статистика ще в розробці.",
+		"settings_in_progress": "⚙️ Налаштування ще в розробці.",
+		"suggest_prompt": "✉️ Напиши, що ти хотів би покращити:",
+		"vip_soon": "💎 VIP-функції з'являться незабаром!",
+		"donate_thanks": "💰 Підтримка в розробці. Дякуємо за інтерес!"
+		
 
         "gender_male": "Чоловіча",
         "gender_female": "Жіноча",
@@ -382,13 +396,20 @@ TEXTS = {
 	"any_sub": "🔄 Any subtopic",
 
 
-	"btn_start_chat": "🔸 Start Chatting",
-	"btn_stats": "📊 My Stats",
-	"btn_settings": "⚙️ Settings",
-	"btn_suggest": "✉️ Suggest Changes",
-	"btn_get_vip": "💎 Get VIP",
-	"btn_donate": "💰 Become a Donor",
-	"main_menu": "🏠 Main menu. Choose an action:",
+		"btn_start_chat": "🔸 Start Chatting",
+		"btn_stats": "📊 My Stats",
+		"btn_settings": "⚙️ Settings",
+		"btn_suggest": "✉️ Suggest Changes",
+		"btn_get_vip": "💎 Get VIP",
+		"btn_donate": "💰 Become a Donor",
+		"main_menu": "🏠 Main menu. Choose an action:",
+
+		"stats_in_progress": "📊 Statistics are still in development.",
+		"settings_in_progress": "⚙️ Settings are still in development.",
+		"suggest_prompt": "✉️ Write what you’d like to improve:",
+		"vip_soon": "💎 VIP features coming soon!",
+		"donate_thanks": "💰 Support is in development. Thank you for your interest!"
+		
 
         "gender_male": "Male",
         "gender_female": "Female",
@@ -554,13 +575,20 @@ TEXTS = {
 	"any_sub": "🔄 Cualquier subtema",
 
 
-	"btn_start_chat": "🔸 Comenzar a chatear",
-	"btn_stats": "📊 Mis estadísticas",
-	"btn_settings": "⚙️ Configuración",
-	"btn_suggest": "✉️ Sugerir cambios",
-	"btn_get_vip": "💎 Obtener VIP",
-	"btn_donate": "💰 Ser donante",
-	"main_menu": "🏠 Menú principal. Elige una opción:",
+		"btn_start_chat": "🔸 Comenzar a chatear",
+		"btn_stats": "📊 Mis estadísticas",
+		"btn_settings": "⚙️ Configuración",
+		"btn_suggest": "✉️ Sugerir cambios",
+		"btn_get_vip": "💎 Obtener VIP",
+		"btn_donate": "💰 Ser donante",
+		"main_menu": "🏠 Menú principal. Elige una opción:",
+
+		"stats_in_progress": "📊 Las estadísticas aún están en desarrollo.",
+		"settings_in_progress": "⚙️ La configuración aún está en desarrollo.",
+		"suggest_prompt": "✉️ Escribe lo que te gustaría mejorar:",
+		"vip_soon": "💎 ¡Las funciones VIP estarán disponibles pronto!",
+		"donate_thanks": "💰 El soporte está en desarrollo. ¡Gracias por tu interés!"
+		
 
         "gender_male": "Masculino",
         "gender_female": "Femenino",
@@ -725,14 +753,21 @@ TEXTS = {
         "btn_end": "❌ Terminer la discussion",
 	"any_sub": "🔄 N'importe quel sous-thème",
 
-	"btn_start_chat": "🔸 Commencer à discuter",
-	"btn_stats": "📊 Mes statistiques",
-	"btn_settings": "⚙️ Paramètres",
-	"btn_suggest": "✉️ Suggérer des modifications",
-	"btn_get_vip": "💎 Obtenir le VIP",
-	"btn_donate": "💰 Devenir donateur",
-	"main_menu": "🏠 Menu principal. Choisissez une action :",
+		"btn_start_chat": "🔸 Commencer à discuter",
+		"btn_stats": "📊 Mes statistiques",
+		"btn_settings": "⚙️ Paramètres",
+		"btn_suggest": "✉️ Suggérer des modifications",
+		"btn_get_vip": "💎 Obtenir le VIP",
+		"btn_donate": "💰 Devenir donateur",
+		"main_menu": "🏠 Menu principal. Choisissez une action :",
 
+		"stats_in_progress": "📊 Les statistiques sont encore en développement.",
+		"settings_in_progress": "⚙️ Les paramètres sont encore en développement.",
+		"suggest_prompt": "✉️ Écris ce que tu aimerais améliorer :",
+		"vip_soon": "💎 Les fonctionnalités VIP arrivent bientôt !",
+		"donate_thanks": "💰 Le soutien est en développement. Merci pour ton intérêt !"
+
+		
         "gender_male": "Homme",
         "gender_female": "Femme",
         "gender_any": "Peu importe",
@@ -896,13 +931,20 @@ TEXTS = {
 	"any_sub": "🔄 Beliebiges Unterthema",
 
 
-	"btn_start_chat": "🔸 Chat starten",
-	"btn_stats": "📊 Meine Statistik",
-	"btn_settings": "⚙️ Einstellungen",
-	"btn_suggest": "✉️ Änderungen vorschlagen",
-	"btn_get_vip": "💎 VIP erhalten",
-	"btn_donate": "💰 Spender werden",
-	"main_menu": "🏠 Hauptmenü. Wähle eine Aktion:",
+		"btn_start_chat": "🔸 Chat starten",
+		"btn_stats": "📊 Meine Statistik",
+		"btn_settings": "⚙️ Einstellungen",
+		"btn_suggest": "✉️ Änderungen vorschlagen",
+		"btn_get_vip": "💎 VIP erhalten",
+		"btn_donate": "💰 Spender werden",
+		"main_menu": "🏠 Hauptmenü. Wähle eine Aktion:",
+
+		"stats_in_progress": "📊 Statistiken befinden sich noch in Entwicklung.",
+		"settings_in_progress": "⚙️ Einstellungen befinden sich noch in Entwicklung.",
+		"suggest_prompt": "✉️ Schreibe, was du verbessern möchtest:",
+		"vip_soon": "💎 VIP-Funktionen kommen bald!",
+		"donate_thanks": "💰 Unterstützung in Entwicklung. Vielen Dank für dein Interesse!"
+		
 
         "gender_male": "Männlich",
         "gender_female": "Weiblich",
