@@ -50,16 +50,13 @@ async def kb_chat(user):
 
 
 # 🔹 Создание главного меню
-async def kb_main_menu(user):
-    buttons = [
-        [await tr(user, "btn_start_chat")],
-        [await tr(user, "btn_stats"), await tr(user, "btn_settings")],
-        [await tr(user, "btn_suggest"), await tr(user, "btn_get_vip")],
-        [await tr(user, "btn_donate")],
-    ]
-
-    # Кнопка только для админа
-    if user["_id"] in ADMIN_IDS:
-        buttons.append(["📊 Админ статистика"])
-
-    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+async def kb_main_menu(user): 
+    return ReplyKeyboardMarkup( 
+        [ 
+            [await tr(user, "btn_start_chat")], 
+            [await tr(user, "btn_stats"), await tr(user, "btn_settings")], 
+            [await tr(user, "btn_suggest"), await tr(user, "btn_get_vip")], 
+            [await tr(user, "btn_donate")], 
+        ], 
+        resize_keyboard=True 
+    )
