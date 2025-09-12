@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from init_db import get_db  # <-- здесь используем твой файл с asyncpg
+from db.init_db import get_db  # <-- здесь используем твой файл с asyncpg
 
 async def get_stats():
     pool = await get_db()
