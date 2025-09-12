@@ -343,7 +343,13 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         companion_id = user.get("companion_id")
         if companion_id:
+            # Отправляем сообщение собеседнику
             await context.bot.send_message(companion_id, text=text)
+    
+            # 📈 увеличиваем счётчики сообщений
+            from db.user_queries import increment_messages
+            await increment_messages(user_id)
+            await increment_messages(companion_id)
         return
 
     # Фолбэк
