@@ -151,6 +151,14 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(await tr(user, "donate_thanks"))
             return
 
+        elif text == "📊 Админ статистика":
+            from handlers.admin import send_admin_stats
+            if int(user_id) in ADMIN_IDS:  # проверяем что это админ
+                await send_admin_stats(update, context)
+            else:
+                await update.message.reply_text("⛔ У вас нет доступа к этой функции.")
+            return
+
 
     # Обработка предложений
     if state == "suggest":
