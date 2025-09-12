@@ -1,356 +1,250 @@
 import logging
-import asyncio
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from handlers.keyboards import kb_after_sub, kb_searching
-from core.i18n import tr, tr_lang
+from handlers.keyboards import kb_after_sub, kb_searching, kb_main_menu
+from core.i18n import tr
 from db.user_queries import (
     get_user, update_user_nickname, update_user_gender,
-    update_user_theme, update_user_sub, update_user_state, create_user
+    update_user_theme, update_user_sub, update_user_state,
+    increment_messages
 )
 from core.topics import TOPICS
-from core.matchmaking import add_to_queue, is_in_chat, remove_from_queue, active_search_tasks, queue
+from core.matchmaking import add_to_queue, remove_from_queue, active_search_tasks, is_in_chat
 from core.chat_control import end_dialog
+from handlers.admin import send_admin_stats
+from config import ADMIN_IDS  # список ID админов
 
 logger = logging.getLogger(__name__)
 
 async def get_topic_keyboard(user):
-    topic_translated = [await tr(user, t) for t in TOPICS.keys()]
-    keyboard = [[t] for t in topic_translated]
+    """Создаёт клавиатуру выбора тем с переводом."""
+    topic_keys = [await tr(user, k) for k in TOPICS.keys()]
+    keyboard = [[k] for k in topic_keys]
     keyboard.append([await tr(user, "btn_main_menu")])
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 
+async def handle_stop_search(user_id, user, context):
+    """Обработка кнопки 'Остановить поиск'."""
+    await remove_from_queue(user_id)
+    task = active_search_tasks.pop(user_id, None)
+    if task:
+        try: task.cancel()
+        except: pass
+
+    await update_user_state(user_id, "menu_after_sub")
+    user = await get_user(user_id)
+    stopped_msg = await tr(user, "search_stopped")
+    await context.bot.send_message(
+        chat_id=user_id,
+        text=stopped_msg,
+        reply_markup=await kb_after_sub(user)
+    )
+
+
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.debug("💬 MSG: %s", update.message.text)
     user_id = update.effective_user.id
     text = (update.message.text or "").strip()
-
     user = await get_user(user_id)
+
     if not user:
-        lang_code = (update.effective_user.language_code or "ru").split("-")[0]
-        await update.message.reply_text(
-            tr_lang(lang_code, "pls_start"),
-            reply_markup=ReplyKeyboardMarkup([["/start"]], resize_keyboard=True)
-        )
+        await update.message.reply_text("⚠️ Нажмите /start")
         return
 
     state = user.get("state")
     logger.debug(f"STATE={state} TEXT={text!r} USER_LANG={user.get('lang')}")
 
-    # --- Ранняя и надёжная обработка "Остановить поиск" ---
-    # Сработает независимо от состояния: убираем из очереди, отменяем таск,
-    # меняем стейт и гарантированно отправляем сообщение + новую клавиатуру.
-    try:
-        stop_label = await tr(user, "btn_stop") or "⛔ Остановить поиск"
-    except Exception:
-        stop_label = "⛔ Остановить поиск"
-
-    try:
-        stopped_msg = await tr(user, "search_stopped") or "❌ Поиск остановлен."
-    except Exception:
-        stopped_msg = "❌ Поиск остановлен."
-
-    # нормализуем сравнение (убираем пробелы вокруг)
-    if text and text.strip() == stop_label.strip():
-        logger.info("User %s pressed STOP button (state=%s)", user_id, state)
-
-        # удаляем из очереди
-        await remove_from_queue(user_id)
-
-        # отменяем отложенную таску retry_search если есть
-        task = active_search_tasks.pop(user_id, None)
-        if task:
-            try:
-                task.cancel()
-            except Exception:
-                logger.exception("Failed to cancel search task for user %s", user_id)
-
-        # обновляем состояние
-        await update_user_state(user_id, "menu_after_sub")
-        user = await get_user(user_id)  # обновлённый user для tr/kb
-
-
-        # отправляем подтверждение + новую клавиатуру (с "Начать поиск")
-        try:
-            await context.bot.send_message(chat_id=user_id, text=stopped_msg, reply_markup=await kb_after_sub(user))
-        except Exception:
-            logger.exception("Failed sending stopped message with kb_after_sub to %s", user_id)
-
+    # --- Ранняя обработка STOP ---
+    stop_label = await tr(user, "btn_stop")
+    if text == stop_label:
+        await handle_stop_search(user_id, user, context)
         return
 
-    # ----------------- Обычная логика состояний -----------------
-
-    # Шаг 1: Никнейм
+    # --- Регистрация ---
     if state == "nickname":
         await update_user_nickname(user_id, text)
         await update_user_state(user_id, "gender")
-        await update.message.reply_text(
-            await tr(user, "choose_gender"),
-            reply_markup=ReplyKeyboardMarkup(
-                [[await tr(user, "gender_male")],
-                 [await tr(user, "gender_female")],
-                 [await tr(user, "gender_any")]],
-                resize_keyboard=True
-            )
+        keyboard = ReplyKeyboardMarkup(
+            [[await tr(user, "gender_male")],
+             [await tr(user, "gender_female")],
+             [await tr(user, "gender_any")]],
+            resize_keyboard=True
         )
+        await update.message.reply_text(await tr(user, "choose_gender"), reply_markup=keyboard)
         return
 
-    # Шаг 2: Пол
     if state == "gender":
-        valid_genders = [await tr(user, "gender_male"), await tr(user, "gender_female"), await tr(user, "gender_any")]
+        valid_genders = [await tr(user, "gender_male"),
+                         await tr(user, "gender_female"),
+                         await tr(user, "gender_any")]
         if text not in valid_genders:
-            await update.message.reply_text(
-                await tr(user, "wrong_gender"),
-                reply_markup=ReplyKeyboardMarkup([[g] for g in valid_genders], resize_keyboard=True)
-            )
+            await update.message.reply_text(await tr(user, "wrong_gender"),
+                                            reply_markup=ReplyKeyboardMarkup([[g] for g in valid_genders], resize_keyboard=True))
             return
-
         await update_user_gender(user_id, text)
         await update_user_state(user_id, "menu")
         user = await get_user(user_id)
-        from handlers.keyboards import kb_main_menu
-        await update.message.reply_text(
-            await tr(user, "main_menu"),
-            reply_markup=await kb_main_menu(user)
-        )
+        await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
         return
 
-    # Меню (после регистрации)
+    # --- Главное меню ---
     if state == "menu":
-        if text == await tr(user, "btn_start_chat"):
-            await update_user_state(user_id, "theme")
-            user = await get_user(user_id)
-            await update.message.reply_text(
-                await tr(user, "pick_theme"),
-                reply_markup=await get_topic_keyboard(user)
-            )
-            return
+        menu_actions = {
+            await tr(user, "btn_start_chat"): "theme",
+            await tr(user, "btn_stats"): "stats",
+            await tr(user, "btn_settings"): "settings",
+            await tr(user, "btn_suggest"): "suggest",
+            await tr(user, "btn_get_vip"): "vip",
+            await tr(user, "btn_donate"): "donate",
+        }
 
-        elif text == await tr(user, "btn_stats"):
-            await update.message.reply_text(await tr(user, "stats_in_progress"))
-            return
-        
-        elif text == await tr(user, "btn_settings"):
-            await update.message.reply_text(await tr(user, "settings_in_progress"))
-            return
-        
-        elif text == await tr(user, "btn_suggest"):
-            await update_user_state(user_id, "suggest")
-            await update.message.reply_text(
-                await tr(user, "pls_suggest")
-            )
-            return
-        
-        elif text == await tr(user, "btn_get_vip"):
-            await update.message.reply_text(await tr(user, "vip_soon"))
-            return
-        
-        elif text == await tr(user, "btn_donate"):
-            await update.message.reply_text(await tr(user, "donate_thanks"))
-            return
+        # Проверка кнопки и переход
+        if text in menu_actions:
+            action = menu_actions[text]
 
-        elif text == "📊 Админ статистика":
-            from handlers.admin import send_admin_stats
-            if int(user_id) in ADMIN_IDS:  # проверяем что это админ
+            if action == "theme":
+                await update_user_state(user_id, "theme")
+                user = await get_user(user_id)
+                await update.message.reply_text(await tr(user, "pick_theme"),
+                                                reply_markup=await get_topic_keyboard(user))
+                return
+            elif action == "stats":
+                await update.message.reply_text(await tr(user, "stats_in_progress"))
+                return
+            elif action == "settings":
+                await update.message.reply_text(await tr(user, "settings_in_progress"))
+                return
+            elif action == "suggest":
+                await update_user_state(user_id, "suggest")
+                await update.message.reply_text(await tr(user, "pls_suggest"))
+                return
+            elif action == "vip":
+                await update.message.reply_text(await tr(user, "vip_soon"))
+                return
+            elif action == "donate":
+                await update.message.reply_text(await tr(user, "donate_thanks"))
+                return
+
+        # Админская статистика
+        if text == "📊 Админ статистика":
+            if user_id in ADMIN_IDS:
                 await send_admin_stats(update, context)
             else:
                 await update.message.reply_text("⛔ У вас нет доступа к этой функции.")
             return
 
-
-    # Обработка предложений
+    # --- Предложения ---
     if state == "suggest":
-        admin_id = 491000185  # сюда твой Telegram ID
-        await context.bot.send_message(
-            chat_id=admin_id,
-            text=f"📩 Новое предложение от @{update.effective_user.username or user_id}:\n\n{text}"
-        )
+        admin_id = ADMIN_IDS[0]  # первый админ
+        await context.bot.send_message(chat_id=admin_id,
+                                       text=f"📩 Новое предложение от @{update.effective_user.username or user_id}:\n\n{text}")
         await update.message.reply_text(await tr(user, "suggest_thanks"))
         await update_user_state(user_id, "menu")
-        from handlers.keyboards import kb_main_menu
-        await update.message.reply_text(
-            await tr(user, "main_menu"),
-            reply_markup=await kb_main_menu(user)
-        )
+        await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
         return
 
-    # Шаг 3: Тема
+    # --- Тема и подтема ---
     if state == "theme":
         if text == await tr(user, "btn_main_menu"):
             await update_user_state(user_id, "menu")
-            user = await get_user(user_id)
-            from handlers.keyboards import kb_main_menu
-            await update.message.reply_text(
-                await tr(user, "main_menu"),
-                reply_markup=await kb_main_menu(user)
-            )
+            await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
             return
 
-        theme_key = None
-        for key in TOPICS:
-            if text == await tr(user, key) or text == key:
-                theme_key = key
-                break
-
+        theme_key = next((k for k in TOPICS if text == await tr(user, k) or text == k), None)
         if not theme_key:
             await update.message.reply_text(await tr(user, "wrong_theme"))
             return
 
         await update_user_theme(user_id, theme_key)
         await update_user_state(user_id, "sub")
-
         subtopics = TOPICS[theme_key] + ["any_sub"]
-        subtopics_translated = [await tr(user, s) for s in subtopics]
-        keyboard = [[s] for s in subtopics_translated]
+        keyboard = [[await tr(user, s)] for s in subtopics]
         keyboard.append([await tr(user, "btn_main_menu")])
-
-        await update.message.reply_text(
-            await tr(user, "choose_sub"),
-            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-        )
+        await update.message.reply_text(await tr(user, "choose_sub"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
         return
 
-    # Шаг 4: Подтема
     if state == "sub":
         if text == await tr(user, "btn_main_menu"):
             await update_user_state(user_id, "menu")
-            user = await get_user(user_id)
-            from handlers.keyboards import kb_main_menu
-            await update.message.reply_text(
-                await tr(user, "main_menu"),
-                reply_markup=await kb_main_menu(user)
-            )
+            await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
             return
 
         theme = user.get("theme")
         valid_sub_keys = TOPICS.get(theme, []) + ["any_sub"]
         valid_subs = [await tr(user, s) for s in valid_sub_keys]
-
         if text not in valid_subs:
             await update.message.reply_text(await tr(user, "wrong_sub"))
             return
 
         sub_key = valid_sub_keys[valid_subs.index(text)]
-
         await update_user_sub(user_id, sub_key)
         await update_user_state(user_id, "menu_after_sub")
-        user = await get_user(user_id)
-
-        msg = (
-            f"{await tr(user, 'confirm_theme', theme=await tr(user, theme))}\n"
-            f"{await tr(user, 'confirm_sub', sub=await tr(user, sub_key))}"
-        )
         await update.message.reply_text(
-            msg,
+            f"{await tr(user, 'confirm_theme', theme=await tr(user, theme))}\n"
+            f"{await tr(user, 'confirm_sub', sub=await tr(user, sub_key))}",
             reply_markup=await kb_after_sub(user)
         )
         return
 
-    # Меню после выбора подтемы
+    # --- Меню после выбора подтемы ---
     if state == "menu_after_sub":
         if text == await tr(user, "btn_search"):
             await update_user_state(user_id, "searching")
-            await update.message.reply_text(
-                await tr(user, "searching"),
-                reply_markup=await kb_searching(user)
-            )
+            await update.message.reply_text(await tr(user, "searching"), reply_markup=await kb_searching(user))
             await add_to_queue(user_id, user["theme"], user["sub"], context)
             return
-
         elif text == await tr(user, "btn_change_sub"):
             await update_user_state(user_id, "sub")
             subtopics = TOPICS[user["theme"]] + ["any_sub"]
-            subtopics_translated = [await tr(user, s) for s in subtopics]
-            await update.message.reply_text(
-                await tr(user, "choose_sub"),
-                reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics_translated], resize_keyboard=True)
-            )
+            keyboard = [[await tr(user, s)] for s in subtopics]
+            await update_message = await update.message.reply_text(await tr(user, "choose_sub"),
+                                                                  reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
             return
-
         elif text == await tr(user, "btn_main_menu"):
             await update_user_state(user_id, "menu")
-            user = await get_user(user_id)
-            from handlers.keyboards import kb_main_menu
-            await update.message.reply_text(
-                await tr(user, "main_menu"),
-                reply_markup=await kb_main_menu(user)
-            )
+            await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
             return
-
         elif text == await tr(user, "btn_support"):
-            await update.message.reply_text(
-                await tr(user, "support_thanks"),
-                reply_markup=await kb_after_sub(user)
-            )
+            await update.message.reply_text(await tr(user, "support_thanks"), reply_markup=await kb_after_sub(user))
             return
 
-    # Поиск партнера (внимание: обработка STOP вынесена в ранний блок выше)
+    # --- Поиск партнёра ---
     if state == "searching":
-        # смена подтемы во время поиска
         if text == await tr(user, "btn_change_sub"):
             await remove_from_queue(user_id)
             await update_user_state(user_id, "sub")
-            user = await get_user(user_id)
             sub_keys = TOPICS[user["theme"]] + ["any_sub"]
-            subtopics = [await tr(user, s) for s in sub_keys]
-            await update.message.reply_text(
-                await tr(user, "choose_sub"),
-                reply_markup=ReplyKeyboardMarkup([[s] for s in subtopics], resize_keyboard=True)
-            )
+            keyboard = [[await tr(user, s)] for s in sub_keys]
+            await update.message.reply_text(await tr(user, "choose_sub"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
             return
-
-        # главный меню во время поиска
         if text == await tr(user, "btn_main_menu"):
             await remove_from_queue(user_id)
             await update_user_state(user_id, "menu")
-            user = await get_user(user_id)
-            from handlers.keyboards import kb_main_menu
-            await update.message.reply_text(
-                await tr(user, "search_stopped"),
-                reply_markup=await kb_main_menu(user)
-            )
+            await update.message.reply_text(await tr(user, "search_stopped"), reply_markup=await kb_main_menu(user))
             return
-
         if text == await tr(user, "btn_support"):
-            await update.message.reply_text(
-                await tr(user, "support_thanks"),
-                reply_markup=await kb_searching(user)
-            )
+            await update.message.reply_text(await tr(user, "support_thanks"), reply_markup=await kb_searching(user))
             return
-
-        # любой другой текст во время поиска
         await update.message.reply_text(await tr(user, "default_searching"))
         return
 
-    # Чат
+    # --- Чат ---
     if await is_in_chat(user_id):
         if text == await tr(user, "btn_end"):
             await end_dialog(user_id, context)
             return
-
-        elif text == await tr(user, "btn_new_partner"):
+        if text == await tr(user, "btn_new_partner"):
             await end_dialog(user_id, context, silent=True)
             await update_user_state(user_id, "menu")
-            user = await get_user(user_id)
-            from handlers.keyboards import kb_main_menu
-            await update.message.reply_text(
-                await tr(user, "main_menu"),
-                reply_markup=await kb_main_menu(user)
-            )
+            await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
             return
-
         companion_id = user.get("companion_id")
         if companion_id:
-            # Отправляем сообщение собеседнику
             await context.bot.send_message(companion_id, text=text)
-    
-            # 📈 увеличиваем счётчики сообщений
-            from db.user_queries import increment_messages
             await increment_messages(user_id)
             await increment_messages(companion_id)
         return
 
-    # Фолбэк
+    # --- Фолбэк ---
     await update.message.reply_text(await tr(user, "error_fallback"))
