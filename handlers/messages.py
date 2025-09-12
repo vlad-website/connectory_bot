@@ -198,7 +198,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update_user_state(user_id, "sub")
             subtopics = TOPICS[user["theme"]] + ["any_sub"]
             keyboard = [[await tr(user, s)] for s in subtopics]
-            await update_message = await update.message.reply_text(await tr(user, "choose_sub"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
+            update_message = await update.message.reply_text(await tr(user, "choose_sub"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
             return
         elif text == await tr(user, "btn_main_menu"):
             await update_user_state(user_id, "menu")
