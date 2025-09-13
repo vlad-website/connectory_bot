@@ -59,7 +59,7 @@ async def kb_main_menu(user):
     ]
 
     # Проверяем ID юзера как int
-    if int(user["_id"]) in ADMIN_IDS:
+    if int(user["id"]) in ADMIN_IDS:
         buttons.append(["📊 Админ статистика"])
 
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
