@@ -222,37 +222,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
 
-    # --- Предложения ---
-    if state == "suggest":
-        # Если человек нажал кнопку вместо ввода текста
-        if text in [
-            await tr(user, "btn_main_menu"),
-            await tr(user, "btn_settings"),
-            await tr(user, "btn_start_chat"),
-            await tr(user, "btn_stats"),
-            await tr(user, "btn_get_vip"),
-            await tr(user, "btn_donate")
-        ]:
-            await update_user_state(user_id, "menu")
-            await update.message.reply_text(
-                await tr(user, "main_menu"),
-                reply_markup=await kb_main_menu(user)
-            )
-            return
-
-    # Отправляем предложение админу
-    admin_id = ADMIN_IDS[0]  # первый админ
-    await context.bot.send_message(
-        chat_id=admin_id,
-        text=f"📩 Новое предложение от @{update.effective_user.username or user_id}:\n\n{text}"
-    )
-    await update.message.reply_text(await tr(user, "suggest_thanks"))
-    await update_user_state(user_id, "menu")
-    await update.message.reply_text(
-        await tr(user, "main_menu"),
-        reply_markup=await kb_main_menu(user)
-    )
-    return
+    
 
     # --- Поиск партнёра ---
     if state == "searching":
@@ -290,6 +260,39 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await increment_messages(user_id)
             await increment_messages(companion_id)
         return
+
+
+    # --- Предложения ---
+    if state == "suggest":
+        # Если человек нажал кнопку вместо ввода текста
+        if text in [
+            await tr(user, "btn_main_menu"),
+            await tr(user, "btn_settings"),
+            await tr(user, "btn_start_chat"),
+            await tr(user, "btn_stats"),
+            await tr(user, "btn_get_vip"),
+            await tr(user, "btn_donate")
+        ]:
+            await update_user_state(user_id, "menu")
+            await update.message.reply_text(
+                await tr(user, "main_menu"),
+                reply_markup=await kb_main_menu(user)
+            )
+            return
+
+    # Отправляем предложение админу
+    admin_id = ADMIN_IDS[0]  # первый админ
+    await context.bot.send_message(
+        chat_id=admin_id,
+        text=f"📩 Новое предложение от @{update.effective_user.username or user_id}:\n\n{text}"
+    )
+    await update.message.reply_text(await tr(user, "suggest_thanks"))
+    await update_user_state(user_id, "menu")
+    await update.message.reply_text(
+        await tr(user, "main_menu"),
+        reply_markup=await kb_main_menu(user)
+    )
+    return
 
     # --- Фолбэк ---
     await update.message.reply_text(await tr(user, "error_fallback"))
