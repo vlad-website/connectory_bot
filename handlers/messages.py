@@ -264,35 +264,71 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # --- Предложения ---
     if state == "suggest":
-        # Если человек нажал кнопку вместо ввода текста
-        if text in [
-            await tr(user, "btn_main_menu"),
-            await tr(user, "btn_settings"),
-            await tr(user, "btn_start_chat"),
-            await tr(user, "btn_stats"),
-            await tr(user, "btn_get_vip"),
-            await tr(user, "btn_donate")
-        ]:
+        # подготовим переводы кнопок для проверки (вызываем tr один раз)
+        btn_main = await tr(user, "btn_main_menu")
+        btn_settings = await tr(user, "btn_settings")
+        btn_start = await tr(user, "btn_start_chat")
+        btn_stats = await tr(user, "btn_stats")
+        btn_vip = await tr(user, "btn_get_vip")
+        btn_donate = await tr(user, "btn_donate")
+    
+        cancel_buttons = {btn_main, btn_settings, btn_start, btn_stats, btn_vip, btn_donate}
+    
+        # Если пользователь нажал одну из навигационных кнопок — отменяем режим suggest
+        if text in cancel_buttons:
+            # если нажал "Начать общение" — сразу переводим в state "theme"
+            if text == btn_start:
+                await update_user_state(user_id, "theme")
+                user = await get_user(user_id)
+                await update.message.reply_text(
+                    await tr(user, "pick_theme"),
+                    reply_markup=await get_topic_keyboard(user)
+                )
+                return
+    
+            # во всех остальных случаях возвращаем главное меню
             await update_user_state(user_id, "menu")
+            user = await get_user(user_id)
+            from handlers.keyboards import kb_main_menu
             await update.message.reply_text(
                 await tr(user, "main_menu"),
                 reply_markup=await kb_main_menu(user)
             )
             return
-
-    # Отправляем предложение админу
-    admin_id = ADMIN_IDS[0]  # первый админ
-    await context.bot.send_message(
-        chat_id=admin_id,
-        text=f"📩 Новое предложение от @{update.effective_user.username or user_id}:\n\n{text}"
-    )
-    await update.message.reply_text(await tr(user, "suggest_thanks"))
-    await update_user_state(user_id, "menu")
-    await update.message.reply_text(
-        await tr(user, "main_menu"),
-        reply_markup=await kb_main_menu(user)
-    )
-    return
+    
+        # не присылаем пустые сообщения или команды
+        if not text or text.startswith("/"):
+            # можно отправить сообщение-отмену (перевод добавь в словарь, ключ например "suggest_cancelled")
+            # или просто вернуть в главное меню
+            await update_user_state(user_id, "menu")
+            user = await get_user(user_id)
+            from handlers.keyboards import kb_main_menu
+            await update.message.reply_text(
+                await tr(user, "main_menu"),
+                reply_markup=await kb_main_menu(user)
+            )
+            return
+    
+        # Всё проверено — отправляем предложение админу
+        admin_id = ADMIN_IDS[0] if (globals().get("ADMIN_IDS") and len(ADMIN_IDS) > 0) else None
+        if admin_id:
+            try:
+                await context.bot.send_message(
+                    chat_id=admin_id,
+                    text=f"📩 Новое предложение от @{update.effective_user.username or user_id}:\n\n{text}"
+                )
+            except Exception:
+                logger.exception("Failed to forward suggestion to admin")
+    
+        await update.message.reply_text(await tr(user, "suggest_thanks"))
+        await update_user_state(user_id, "menu")
+        user = await get_user(user_id)
+        from handlers.keyboards import kb_main_menu
+        await update.message.reply_text(
+            await tr(user, "main_menu"),
+            reply_markup=await kb_main_menu(user)
+        )
+        return
 
     # --- Фолбэк ---
     await update.message.reply_text(await tr(user, "error_fallback"))
