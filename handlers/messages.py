@@ -143,20 +143,38 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if state == "theme":
         if text == await tr(user, "btn_main_menu"):
             await update_user_state(user_id, "menu")
-            await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+            user = await get_user(user_id)
+            from handlers.keyboards import kb_main_menu
+            await update.message.reply_text(
+                await tr(user, "main_menu"),
+                reply_markup=await kb_main_menu(user)
+            )
             return
-
-        theme_key = next((k for k in TOPICS if text == await tr(user, k) or text == k), None)
+    
+        # Определяем тему по переводу
+        theme_key = None
+        for key in TOPICS:
+            translated = await tr(user, key)
+            if text == translated or text == key:
+                theme_key = key
+                break
+    
         if not theme_key:
             await update.message.reply_text(await tr(user, "wrong_theme"))
             return
-
+    
         await update_user_theme(user_id, theme_key)
         await update_user_state(user_id, "sub")
+    
         subtopics = TOPICS[theme_key] + ["any_sub"]
-        keyboard = [[await tr(user, s)] for s in subtopics]
+        subtopics_translated = [await tr(user, s) for s in subtopics]
+        keyboard = [[s] for s in subtopics_translated]
         keyboard.append([await tr(user, "btn_main_menu")])
-        await update.message.reply_text(await tr(user, "choose_sub"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
+    
+        await update.message.reply_text(
+            await tr(user, "choose_sub"),
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        )
         return
 
     if state == "sub":
