@@ -43,6 +43,7 @@ async def handle_stop_search(user_id, user, context):
     )
 
 
+
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = (update.message.text or "").strip()
@@ -53,51 +54,46 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     state = user.get("state")
-    logger.debug(f"STATE={state} TEXT={text!r} USER_LANG={user.get('lang')}")
 
-    # --- Ранняя обработка STOP ---
-    stop_label = await tr(user, "btn_stop")
-    if text == stop_label:
-        await handle_stop_search(user_id, user, context)
-        return
-
-    # --- Регистрация ---
+    # --- Регистрация никнейма ---
     if state == "nickname":
         await update_user_nickname(user_id, text)
         await update_user_state(user_id, "gender")
-        keyboard = ReplyKeyboardMarkup(
-            [[await tr(user, "gender_male")],
-             [await tr(user, "gender_female")],
-             [await tr(user, "gender_any")]],
-            resize_keyboard=True
-        )
-        await update.message.reply_text(await tr(user, "choose_gender"), reply_markup=keyboard)
+        user = await get_user(user_id)
+        keyboard = [[await tr(user, "gender_male")],
+                    [await tr(user, "gender_female")],
+                    [await tr(user, "gender_any")]]
+        await update.message.reply_text(await tr(user, "choose_gender"),
+                                        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
         return
 
-
+    # --- Выбор пола ---
     if state == "gender":
-        # Защита от повторного выбора пола
+        # если уже указан, просто переводим в меню
         if user.get("gender"):
             await update_user_state(user_id, "menu")
             user = await get_user(user_id)
-            await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+            await update.message.reply_text(await tr(user, "main_menu"),
+                                            reply_markup=await kb_main_menu(user))
             return
-    
+
         valid_genders = [await tr(user, "gender_male"),
                          await tr(user, "gender_female"),
                          await tr(user, "gender_any")]
         if text not in valid_genders:
-            await update.message.reply_text(
-                await tr(user, "wrong_gender"),
-                reply_markup=ReplyKeyboardMarkup([[g] for g in valid_genders], resize_keyboard=True)
-            )
+            await update.message.reply_text(await tr(user, "wrong_gender"),
+                                            reply_markup=ReplyKeyboardMarkup([[g] for g in valid_genders],
+                                                                             resize_keyboard=True))
             return
-    
+
+        # Сохраняем пол и сразу обновляем user из БД
         await update_user_gender(user_id, text)
         await update_user_state(user_id, "menu")
         user = await get_user(user_id)
-        await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+        await update.message.reply_text(await tr(user, "main_menu"),
+                                        reply_markup=await kb_main_menu(user))
         return
+
 
     # --- Главное меню ---
     if state == "menu":
