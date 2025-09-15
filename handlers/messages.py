@@ -74,14 +74,25 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(await tr(user, "choose_gender"), reply_markup=keyboard)
         return
 
+
     if state == "gender":
+        # Защита от повторного выбора пола
+        if user.get("gender"):
+            await update_user_state(user_id, "menu")
+            user = await get_user(user_id)
+            await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+            return
+    
         valid_genders = [await tr(user, "gender_male"),
                          await tr(user, "gender_female"),
                          await tr(user, "gender_any")]
         if text not in valid_genders:
-            await update.message.reply_text(await tr(user, "wrong_gender"),
-                                            reply_markup=ReplyKeyboardMarkup([[g] for g in valid_genders], resize_keyboard=True))
+            await update.message.reply_text(
+                await tr(user, "wrong_gender"),
+                reply_markup=ReplyKeyboardMarkup([[g] for g in valid_genders], resize_keyboard=True)
+            )
             return
+    
         await update_user_gender(user_id, text)
         await update_user_state(user_id, "menu")
         user = await get_user(user_id)
