@@ -469,12 +469,12 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-    # --- Фолбэк ---
-    await update.message.reply_text(await tr(user, "error_fallback"))
+        # --- Фолбэк ---
+        await update.message.reply_text(await tr(user, "error_fallback"))
 
-except Exception:
-        logger.exception("Unhandled exception in message_handler")
-        try:
-            await update.message.reply_text("Произошла ошибка — попробуйте /start или сообщите администратору.")
-        except Exception:
-            logger.exception("Also failed to notify user after handler exception")
+    except Exception:
+            logger.exception("Unhandled exception in message_handler")
+            try:
+                await update.message.reply_text("Произошла ошибка — попробуйте /start или сообщите администратору.")
+            except Exception:
+                logger.exception("Also failed to notify user after handler exception")
