@@ -2,7 +2,7 @@ import logging
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from handlers.keyboards import kb_after_sub, kb_searching, kb_main_menu
+from handlers.keyboards import kb_after_sub, kb_searching, kb_main_menu, get_topic_keyboard
 from core.i18n import tr
 from db.user_queries import (
     get_user, update_user_nickname, update_user_gender,
