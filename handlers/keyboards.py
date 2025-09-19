@@ -3,6 +3,8 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core.i18n import tr
 from config import ADMIN_IDS
 
+from core.topics import TOPICS
+
 def kb_choose_lang():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")],
@@ -12,6 +14,16 @@ def kb_choose_lang():
         [InlineKeyboardButton("🇩🇪 Deutsch", callback_data="lang_de")],
         [InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
     ])
+
+
+async def get_topic_keyboard(user):
+    keyboard = []
+    for topic_key in TOPICS.keys():
+        label = await tr(user, topic_key)
+        keyboard.append([label])
+    # кнопка назад в меню
+    keyboard.append([await tr(user, "btn_main_menu")])
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 
 async def kb_after_sub(user):
@@ -24,6 +36,10 @@ async def kb_after_sub(user):
         ],
         resize_keyboard=True
     )
+
+
+
+
 
 # 🔹 Во время поиска собеседника
 async def kb_searching(user):
