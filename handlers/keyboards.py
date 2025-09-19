@@ -13,6 +13,33 @@ def kb_choose_lang():
         [InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
     ])
 
+
+# 🔹 Выбор темы
+async def get_topic_keyboard(user):
+    from config import TOPICS  # словарь тем → подтемы
+
+    buttons = []
+    for topic in TOPICS.keys():
+        buttons.append([await tr(user, f"topic_{topic}")])  # ключи в i18n: topic_<id>
+
+    buttons.append([await tr(user, "btn_main_menu")])  # 🏠 Главное меню
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+
+
+# 🔹 Выбор подтемы для выбранной темы
+async def get_subtopic_keyboard(user, topic: str):
+    from config import TOPICS
+
+    subtopics = TOPICS.get(topic, [])
+    buttons = []
+    for sub in subtopics:
+        buttons.append([await tr(user, f"sub_{sub}")])  # ключи в i18n: sub_<id>
+
+    buttons.append([await tr(user, "btn_main_menu")])  # 🏠 Главное меню
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+
+
+
 async def kb_after_sub(user):
     return ReplyKeyboardMarkup(
         [
