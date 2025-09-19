@@ -127,12 +127,12 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             donate_btn = await tr(user, "btn_donate")
 
             menu_actions = {
-                start_btn: "theme",
-                stats_btn: "stats",
-                settings_btn: "settings",
-                suggest_btn: "suggest",
-                vip_btn: "vip",
-                donate_btn: "donate",
+                "btn_start_chat": "theme",
+                "btn_stats": "stats",
+                "btn_settings": "settings",
+                "btn_suggest": "suggest",
+                "btn_get_vip": "vip",
+                "btn_donate": "donate",
             }
 
             if text in menu_actions:
