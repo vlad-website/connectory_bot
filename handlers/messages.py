@@ -119,7 +119,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # --- Главное меню ---
         if state == "menu":
-            # Словарь действий по ключам
+            # действия по ключам
             menu_actions = {
                 "btn_start_chat": "theme",
                 "btn_stats": "stats",
@@ -129,41 +129,21 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "btn_donate": "donate",
             }
         
-            # Сопоставление текста кнопки с ключом через tr
-            matched_action = None
-            for key, action in menu_actions.items():
-                if text == await tr(user, key):
-                    matched_action = action
-                    break
-        
-            if matched_action:
+            # построим mapping: translated_label -> key
+            translated_map = {}
+            for key in menu_actions.keys():
                 try:
-                    if matched_action == "theme":
-                        await update_user_state(user_id, "theme")
-                        user = await get_user(user_id)
-                        await update.message.reply_text(
-                            await tr(user, "pick_theme"),
-                            reply_markup=await get_topic_keyboard(user)
-                        )
-                    elif matched_action == "stats":
-                        await update.message.reply_text(await tr(user, "stats_in_progress"))
-                    elif matched_action == "settings":
-                        await update.message.reply_text(await tr(user, "settings_in_progress"))
-                    elif matched_action == "suggest":
-                        await update_user_state(user_id, "suggest")
-                        user = await get_user(user_id)
-                        await update.message.reply_text(await tr(user, "pls_suggest"))
-                    elif matched_action == "vip":
-                        await update.message.reply_text(await tr(user, "vip_soon"))
-                    elif matched_action == "donate":
-                        await update.message.reply_text(await tr(user, "donate_thanks"))
+                    label = (await tr(user, key)) or key
                 except Exception:
-                    logger.exception("Menu action %s failed for user %s", matched_action, user_id)
-                    await update.message.reply_text("❌ Ошибка. Попробуйте ещё раз.")
-                return
+                    logger.exception("tr() failed for menu key %s (user=%s)", key, user_id)
+                    label = key
+                translated_map[label.strip()] = key
         
-            # Отдельно админ-кнопка
-            if text == "📊 Админ статистика":
+            admin_label = "📊 Админ статистика"
+            logger.debug("MENU: user=%s text=%r translated_map=%s", user_id, text, list(translated_map.keys()))
+        
+            # сначала — админская кнопка (она добавлена хардкодом в kb_main_menu)
+            if text.strip() == admin_label:
                 if user_id in ADMIN_IDS:
                     try:
                         await send_admin_stats(update, context)
@@ -173,9 +153,41 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update.message.reply_text("⛔ У вас нет доступа к этой функции.")
                 return
         
+            # найдем ключ по переводу
+            matched_key = translated_map.get(text.strip())
+            if matched_key:
+                action = menu_actions[matched_key]
+                try:
+                    if action == "theme":
+                        await update_user_state(user_id, "theme")
+                        user = await get_user(user_id)
+                        try:
+                            await update.message.reply_text(await tr(user, "pick_theme"), reply_markup=await get_topic_keyboard(user))
+                        except Exception:
+                            # если клавиатура/тема упали — логируем и даём понятное сообщение
+                            logger.exception("Failed to send topic keyboard to user %s", user_id)
+                            await update.message.reply_text("❌ Ошибка. Попробуйте ещё раз.")
+                    elif action == "stats":
+                        await update.message.reply_text(await tr(user, "stats_in_progress"))
+                    elif action == "settings":
+                        await update.message.reply_text(await tr(user, "settings_in_progress"))
+                    elif action == "suggest":
+                        await update_user_state(user_id, "suggest")
+                        user = await get_user(user_id)
+                        await update.message.reply_text(await tr(user, "pls_suggest"))
+                    elif action == "vip":
+                        await update.message.reply_text(await tr(user, "vip_soon"))
+                    elif action == "donate":
+                        await update.message.reply_text(await tr(user, "donate_thanks"))
+                except Exception:
+                    logger.exception("Menu action %s failed for user %s", action, user_id)
+                    await update.message.reply_text("❌ Ошибка. Попробуйте ещё раз.")
+                return
+        
         # --- Тема ---
         if state == "theme":
-            if text == await tr(user, "btn_main_menu"):
+            # кнопка назад
+            if text.strip() == (await tr(user, "btn_main_menu")).strip():
                 try:
                     await update_user_state(user_id, "menu")
                     user = await get_user(user_id)
@@ -185,13 +197,19 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update.message.reply_text("❌ Ошибка. Попробуйте /start.")
                 return
         
-            # Находим ключ темы через клавиатуру, не текст напрямую
-            theme_key = None
-            for key in TOPICS:
-                if text == await tr(user, key):
-                    theme_key = key
-                    break
+            # Создаём mapping переведённого названия темы -> ключ темы
+            topics_map = {}
+            for key in TOPICS.keys():
+                try:
+                    label = (await tr(user, key)) or key
+                except Exception:
+                    logger.exception("tr() failed for topic key %s (user=%s)", key, user_id)
+                    label = key
+                topics_map[label.strip()] = key
         
+            logger.debug("THEME: user=%s pressed=%r topics_labels=%s", user_id, text, list(topics_map.keys()))
+        
+            theme_key = topics_map.get(text.strip())
             if not theme_key:
                 await update.message.reply_text(await tr(user, "wrong_theme"))
                 return
@@ -213,7 +231,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # --- Подтема ---
         if state == "sub":
-            if text == await tr(user, "btn_main_menu"):
+            # кнопка назад
+            if text.strip() == (await tr(user, "btn_main_menu")).strip():
                 try:
                     await update_user_state(user_id, "menu")
                     user = await get_user(user_id)
@@ -225,12 +244,20 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
             theme = user.get("theme")
             valid_sub_keys = TOPICS.get(theme, []) + ["any_sub"]
-            matched_sub = None
-            for sub_key in valid_sub_keys:
-                if text == await tr(user, sub_key):
-                    matched_sub = sub_key
-                    break
         
+            # mapping: translated -> sub_key
+            sub_map = {}
+            for sk in valid_sub_keys:
+                try:
+                    lab = (await tr(user, sk)) or sk
+                except Exception:
+                    logger.exception("tr() failed for sub key %s (user=%s)", sk, user_id)
+                    lab = sk
+                sub_map[lab.strip()] = sk
+        
+            logger.debug("SUB: user=%s pressed=%r sub_labels=%s", user_id, text, list(sub_map.keys()))
+        
+            matched_sub = sub_map.get(text.strip())
             if not matched_sub:
                 await update.message.reply_text(await tr(user, "wrong_sub"))
                 return
