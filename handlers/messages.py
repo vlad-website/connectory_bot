@@ -15,6 +15,11 @@ from core.chat_control import end_dialog
 from handlers.admin import send_admin_stats
 from config import ADMIN_IDS
 
+
+from handlers.keyboards import get_topic_keyboard
+
+
+
 logger = logging.getLogger(__name__)
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
