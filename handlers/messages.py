@@ -119,13 +119,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # --- Главное меню ---
         if state == "menu":
-            start_btn = await tr(user, "btn_start_chat")
-            stats_btn = await tr(user, "btn_stats")
-            settings_btn = await tr(user, "btn_settings")
-            suggest_btn = await tr(user, "btn_suggest")
-            vip_btn = await tr(user, "btn_get_vip")
-            donate_btn = await tr(user, "btn_donate")
-
+            # Словарь действий по ключам
             menu_actions = {
                 "btn_start_chat": "theme",
                 "btn_stats": "stats",
@@ -134,31 +128,41 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "btn_get_vip": "vip",
                 "btn_donate": "donate",
             }
-
-            if text in menu_actions:
-                action = menu_actions[text]
+        
+            # Сопоставление текста кнопки с ключом через tr
+            matched_action = None
+            for key, action in menu_actions.items():
+                if text == await tr(user, key):
+                    matched_action = action
+                    break
+        
+            if matched_action:
                 try:
-                    if action == "theme":
+                    if matched_action == "theme":
                         await update_user_state(user_id, "theme")
                         user = await get_user(user_id)
-                        await update.message.reply_text(await tr(user, "pick_theme"), reply_markup=await get_topic_keyboard(user))
-                    elif action == "stats":
+                        await update.message.reply_text(
+                            await tr(user, "pick_theme"),
+                            reply_markup=await get_topic_keyboard(user)
+                        )
+                    elif matched_action == "stats":
                         await update.message.reply_text(await tr(user, "stats_in_progress"))
-                    elif action == "settings":
+                    elif matched_action == "settings":
                         await update.message.reply_text(await tr(user, "settings_in_progress"))
-                    elif action == "suggest":
+                    elif matched_action == "suggest":
                         await update_user_state(user_id, "suggest")
                         user = await get_user(user_id)
                         await update.message.reply_text(await tr(user, "pls_suggest"))
-                    elif action == "vip":
+                    elif matched_action == "vip":
                         await update.message.reply_text(await tr(user, "vip_soon"))
-                    elif action == "donate":
+                    elif matched_action == "donate":
                         await update.message.reply_text(await tr(user, "donate_thanks"))
                 except Exception:
-                    logger.exception("Menu action %s failed for user %s", action, user_id)
+                    logger.exception("Menu action %s failed for user %s", matched_action, user_id)
                     await update.message.reply_text("❌ Ошибка. Попробуйте ещё раз.")
                 return
-
+        
+            # Отдельно админ-кнопка
             if text == "📊 Админ статистика":
                 if user_id in ADMIN_IDS:
                     try:
@@ -168,7 +172,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 else:
                     await update.message.reply_text("⛔ У вас нет доступа к этой функции.")
                 return
-
+        
         # --- Тема ---
         if state == "theme":
             if text == await tr(user, "btn_main_menu"):
@@ -180,17 +184,18 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logger.exception("Failed to return to menu from theme for user %s", user_id)
                     await update.message.reply_text("❌ Ошибка. Попробуйте /start.")
                 return
-
+        
+            # Находим ключ темы через клавиатуру, не текст напрямую
             theme_key = None
             for key in TOPICS:
-                if text == await tr(user, key) or text == key:
+                if text == await tr(user, key):
                     theme_key = key
                     break
-
+        
             if not theme_key:
                 await update.message.reply_text(await tr(user, "wrong_theme"))
                 return
-
+        
             try:
                 await update_user_theme(user_id, theme_key)
                 await update_user_state(user_id, "sub")
@@ -199,13 +204,13 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logger.exception("Failed to set theme/sub for user %s", user_id)
                 await update.message.reply_text("❌ Не удалось сохранить тему. Попробуйте /start.")
                 return
-
+        
             subtopics = TOPICS[theme_key] + ["any_sub"]
             keyboard = [[await tr(user, s)] for s in subtopics]
             keyboard.append([await tr(user, "btn_main_menu")])
             await update.message.reply_text(await tr(user, "choose_sub"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
             return
-
+        
         # --- Подтема ---
         if state == "sub":
             if text == await tr(user, "btn_main_menu"):
@@ -217,28 +222,31 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logger.exception("Failed to return to menu from sub for user %s", user_id)
                     await update.message.reply_text("❌ Ошибка. Попробуйте /start.")
                 return
-
+        
             theme = user.get("theme")
             valid_sub_keys = TOPICS.get(theme, []) + ["any_sub"]
-            valid_subs = [await tr(user, s) for s in valid_sub_keys]
-
-            if text not in valid_subs:
+            matched_sub = None
+            for sub_key in valid_sub_keys:
+                if text == await tr(user, sub_key):
+                    matched_sub = sub_key
+                    break
+        
+            if not matched_sub:
                 await update.message.reply_text(await tr(user, "wrong_sub"))
                 return
-
-            sub_key = valid_sub_keys[valid_subs.index(text)]
+        
             try:
-                await update_user_sub(user_id, sub_key)
+                await update_user_sub(user_id, matched_sub)
                 await update_user_state(user_id, "menu_after_sub")
                 user = await get_user(user_id)
             except Exception:
                 logger.exception("Failed to set sub/menu_after_sub for user %s", user_id)
                 await update.message.reply_text("❌ Не удалось сохранить подбор. Попробуйте /start.")
                 return
-
+        
             await update.message.reply_text(
                 f"{await tr(user, 'confirm_theme', theme=await tr(user, theme))}\n"
-                f"{await tr(user, 'confirm_sub', sub=await tr(user, sub_key))}",
+                f"{await tr(user, 'confirm_sub', sub=await tr(user, matched_sub))}",
                 reply_markup=await kb_after_sub(user)
             )
             return
