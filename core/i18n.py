@@ -53,7 +53,7 @@ TEXTS = {
         "btn_end_dialog": "❌ Завершить диалог",
         "btn_new_partner": "🔍 Новый собеседник",
         "pls_start": "Пожалуйста, отправьте /start.",
-        "btn_end": "❌ Завершить диалог",
+        "btn_end_chat": "❌ Завершить диалог",
 		"any_sub": "🔄 Любая подтема",
 
         # Пол
@@ -221,7 +221,7 @@ TEXTS = {
         "btn_end_dialog": "❌ Завершити діалог",
         "btn_new_partner": "🔍 Новий співрозмовник",
         "pls_start": "Будь ласка, надішліть /start.",
-        "btn_end": "❌ Завершити діалог",
+        "btn_end_chat": "❌ Завершити діалог",
 	"any_sub": "🔄 Будь-яка підтема",
 
 
@@ -404,7 +404,7 @@ TEXTS = {
         "btn_end_dialog": "❌ End chat",
         "btn_new_partner": "🔍 New partner",
         "pls_start": "Please send /start.",
-        "btn_end": "❌ End chat",
+        "btn_end_chat": "❌ End chat",
 	"any_sub": "🔄 Any subtopic",
 
 
@@ -588,7 +588,7 @@ TEXTS = {
         "btn_end_dialog": "❌ Terminar chat",
         "btn_new_partner": "🔍 Nueva pareja",
         "pls_start": "Por favor, envía /start.",
-        "btn_end": "❌ Terminar chat",
+        "btn_end_chat": "❌ Terminar chat",
 	"any_sub": "🔄 Cualquier subtema",
 
 
@@ -772,7 +772,7 @@ TEXTS = {
         "btn_end_dialog": "❌ Terminer la discussion",
         "btn_new_partner": "🔍 Nouveau partenaire",
         "pls_start": "Veuillez envoyer /start.",
-        "btn_end": "❌ Terminer la discussion",
+        "btn_end_chat": "❌ Terminer la discussion",
 	"any_sub": "🔄 N'importe quel sous-thème",
 
 		"btn_start_chat": "🔸 Commencer à discuter",
@@ -954,7 +954,7 @@ TEXTS = {
         "btn_end_dialog": "❌ Gespräch beenden",
         "btn_new_partner": "🔍 Neuer Partner",
         "pls_start": "Bitte sende /start.",
-        "btn_end": "❌ Chat beenden",
+        "btn_end_chat": "❌ Chat beenden",
 	"any_sub": "🔄 Beliebiges Unterthema",
 
 
