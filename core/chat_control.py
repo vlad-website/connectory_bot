@@ -1,11 +1,11 @@
 from db.user_queries import get_user, update_user_state, update_user_companion
-from handlers.keyboards import kb_after_sub          # ← клавиатура после диалога
-from telegram import Bot
+from handlers.keyboards import kb_main_menu
+from core.i18n import tr
 
 async def end_dialog(user_id: int, context, silent: bool = False):
     """
     Завершить диалог.
-    silent=True — не уведомлять вторую сторону (используется для «Новый собеседник»).
+    silent=True — не уведомлять инициатора (используется для «Новый собеседник»).
     """
     user = await get_user(user_id)
     if not user:
@@ -13,38 +13,38 @@ async def end_dialog(user_id: int, context, silent: bool = False):
 
     companion_id = user.get("companion_id")
 
-    # переводим текущего пользователя в меню
+    # текущего переводим в меню
     await update_user_state(user_id, "menu")
     await update_user_companion(user_id, None)
 
-    # переводим собеседника, если есть
+    # собеседника тоже сбрасываем
     if companion_id:
         await update_user_state(companion_id, "menu")
         await update_user_companion(companion_id, None)
 
-    
-    # если собеседник решил искать нового собеседника
+    # silent-режим → уведомляем только собеседника
     if silent:
-        # Тихий режим: сообщаем второй стороне лишь факт завершения,
-        # без уточнения «кто»; даём корректную клавиатуру меню.
         if companion_id:
-            await context.bot.send_message(
-                companion_id,
-                "💬 Собеседник отключился.",
-                reply_markup=kb_after_sub()
-            )
-        return   # ничего больше не отправляем initiator'у
+            companion = await get_user(companion_id)
+            if companion:
+                await context.bot.send_message(
+                    companion_id,
+                    await tr(companion, "chat_ended_partner"),
+                    reply_markup=await kb_main_menu(companion),
+                )
+        return
 
-    # отправляем сообщения, если не silent
-    if not silent:
-        await context.bot.send_message(
-            user_id,
-            "💬 Диалог завершён.",
-            reply_markup=kb_after_sub()
-        )
-        if companion_id:
+    # обычный выход → оба получают сообщение
+    await context.bot.send_message(
+        user_id,
+        await tr(user, "chat_ended"),
+        reply_markup=await kb_main_menu(user),
+    )
+    if companion_id:
+        companion = await get_user(companion_id)
+        if companion:
             await context.bot.send_message(
                 companion_id,
-                "❌ Собеседник завершил диалог.",
-                reply_markup=kb_after_sub()
+                await tr(companion, "chat_ended_partner"),
+                reply_markup=await kb_main_menu(companion),
             )
