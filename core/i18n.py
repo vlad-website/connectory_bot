@@ -17,6 +17,8 @@ TEXTS = {
         "error_fallback": "❌ Что-то пошло не так. Напиши /start.",
         "sub_any": "Любая подтема",
         "support_thanks": "🙏 Спасибо за поддержку!\n(Здесь будет ссылка на донат)",
+		"chat_ended": "💬 Диалог завершён. Возврат в главное меню.",
+		"chat_ended_partner": "❌ Собеседник завершил диалог. Вы в главном меню.",
 
 
 		"search_stop": "❌ Поиск остановлен.",
@@ -206,6 +208,9 @@ TEXTS = {
         "error_fallback": "❌ Щось пішло не так. Напишіть /start.",
         "sub_any": "Будь-яка підтема",
         "support_thanks": "🙏 Дякуємо за підтримку!\n(Тут буде посилання на донат)",
+		"chat_ended": "💬 Діалог завершено. Повернення до головного меню.",
+		"chat_ended_partner": "❌ Співрозмовник завершив діалог. Ви в головному меню.",
+		"search_stop": "❌ Пошук зупинено.",
 
         "btn_start": "Почати",
         "btn_search": "🔍 Почати пошук",
@@ -386,6 +391,9 @@ TEXTS = {
         "error_fallback": "❌ Something went wrong. Please send /start.",
         "sub_any": "Any subtopic",
         "support_thanks": "🙏 Thanks for your support!\n(A donation link will appear here)",
+		"chat_ended": "💬 Chat ended. Returning to the main menu.",
+		"chat_ended_partner": "❌ Your partner ended the chat. You are now in the main menu.",
+		"search_stop": "❌ Search stopped.",
 
         "btn_start": "Start",
         "btn_search": "🔍 Start search",
@@ -567,6 +575,9 @@ TEXTS = {
         "error_fallback": "❌ Algo salió mal. Escribe /start.",
         "sub_any": "Cualquier subtema",
         "support_thanks": "🙏 ¡Gracias por tu apoyo!\n(Aquí aparecerá el enlace de donación)",
+		"chat_ended": "💬 El chat ha terminado. Regresando al menú principal.",
+		"chat_ended_partner": "❌ Tu compañero terminó el chat. Ahora estás en el menú principal.",
+		"search_stop": "❌ Búsqueda detenida.",
 
         "btn_start": "Comenzar",
         "btn_search": "🔍 Buscar",
@@ -748,6 +759,9 @@ TEXTS = {
         "error_fallback": "❌ Une erreur est survenue. Envoyez /start.",
         "sub_any": "N’importe quel sous-thème",
         "support_thanks": "🙏 Merci pour votre soutien !\n(Un lien de don apparaîtra ici)",
+		"chat_ended": "💬 Conversation terminée. Retour au menu principal.",
+		"chat_ended_partner": "❌ Votre partenaire a mis fin à la conversation. Vous êtes dans le menu principal.",
+		"search_stopped": "❌ Recherche arrêtée.",
 
         "btn_start": "Commencer",
         "btn_search": "🔍 Lancer la recherche",
@@ -927,6 +941,9 @@ TEXTS = {
         "error_fallback": "❌ Etwas ist schiefgelaufen. Sende /start.",
         "sub_any": "Beliebiges Unterthema",
         "support_thanks": "🙏 Vielen Dank für deine Unterstützung!\n(Hier erscheint ein Spendenlink)",
+		"chat_ended": "💬 Chat beendet. Zurück zum Hauptmenü.",
+		"chat_ended_partner": "❌ Dein Gesprächspartner hat den Chat beendet. Du bist jetzt im Hauptmenü.",
+		"search_stop": "❌ Suche gestoppt.",
 
         "btn_start": "Start",
         "btn_search": "🔍 Suche starten",
