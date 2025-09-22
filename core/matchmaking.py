@@ -7,7 +7,7 @@ from db.user_queries import (
     update_user_companion,
 )
 from handlers.keyboards import kb_chat
-from core.i18n import tr_lang            # локализация строк
+from core.i18n import tr_lang  # локализация строк
 
 # Человекочитаемые названия языков
 language_names = {
@@ -34,45 +34,52 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
 
         same_theme = other["theme"] == theme
         sub_match = (
-            sub == other["sub"] or
-            sub == "Любая подтема" or
-            other["sub"] == "Любая подтема"
+            sub == other["sub"]
+            or sub == "Любая подтема"
+            or other["sub"] == "Любая подтема"
         )
 
         if same_theme and sub_match:
-            queue.remove(other_id)                      # убираем из очереди
+            queue.remove(other_id)  # убираем из очереди
 
             # ❷ Обоих переводим в state = chatting
-            await update_user_state(user_id,  "chatting")
+            await update_user_state(user_id, "chatting")
             await update_user_state(other_id, "chatting")
-            await update_user_companion(user_id,  other_id)
+            await update_user_companion(user_id, other_id)
             await update_user_companion(other_id, user_id)
 
-            # ❸ Формируем подписи под‑тем
+            # ❸ Формируем подписи под-тем
             sub_a = sub if sub != "Любая подтема" else other["sub"]
             sub_b = other["sub"] if other["sub"] != "Любая подтема" else sub
 
             # ❹ Локализованный вывод
-            lang_a = language_names.get(user["lang"],  user["lang"])
+            lang_a = language_names.get(user["lang"], user["lang"])
             lang_b = language_names.get(other["lang"], other["lang"])
 
+            # Сообщения об успешном поиске
             await context.bot.send_message(
                 user_id,
                 tr_lang(
-                    user["lang"], "found",
-                    theme=theme, sub=sub_a, lang=lang_b
+                    user["lang"],
+                    "found",
+                    theme=theme,
+                    sub=sub_a,
+                    lang=lang_b,
                 ),
-                reply_markup=kb_chat()
+                reply_markup=await kb_chat(user),
             )
             await context.bot.send_message(
                 other_id,
                 tr_lang(
-                    other["lang"], "found",
-                    theme=theme, sub=sub_b, lang=lang_a
+                    other["lang"],
+                    "found",
+                    theme=theme,
+                    sub=sub_b,
+                    lang=lang_a,
                 ),
-                reply_markup=kb_chat()
+                reply_markup=await kb_chat(other),
             )
-            return                              # важен выход после успеха
+            return  # важен выход после успеха
 
     if user_id in queue:
         return  # уже в очереди
@@ -81,21 +88,24 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
     task = asyncio.create_task(retry_search(user_id, theme, sub, context))
     active_search_tasks[user_id] = task
 
-# ---------- повторный поиск через 60 с ----------
+
+# ---------- повторный поиск через 60 с ----------
 async def retry_search(user_id: int, theme: str, sub: str, context):
     await asyncio.sleep(60)
     user = await get_user(user_id)
     if user and user["state"] == "searching":
         await context.bot.send_message(
             user_id,
-            "⏳ Всё ещё ищем собеседника... Попробуем ещё раз."
+            "⏳ Всё ещё ищем собеседника... Попробуем ещё раз.",
         )
         await add_to_queue(user_id, theme, sub, context)
+
 
 # ---------- утилиты ----------
 async def is_in_chat(user_id: int) -> bool:
     user = await get_user(user_id)
     return bool(user and user.get("state") == "chatting")
+
 
 async def remove_from_queue(user_id: int):
     """Убираем пользователя из очереди, если он там есть."""
