@@ -21,6 +21,24 @@ from config import ADMIN_IDS
 
 logger = logging.getLogger(__name__)
 
+# 🔹 Добавляем сюда — новую версию handle_stop_search
+async def handle_stop_search(user_id: int, user: dict, context):
+    try:
+        # убираем пользователя из очереди поиска
+        await remove_from_queue(user_id)
+
+        # возвращаем состояние в menu_after_sub (чтобы мог снова нажать "Поиск")
+        await update_user_state(user_id, "menu_after_sub")
+        user = await get_user(user_id)
+
+        await context.bot.send_message(
+            user_id,
+            await tr(user, "search_stopped"),
+            reply_markup=await kb_after_sub(user)
+        )
+    except Exception:
+        logger.exception("Failed to stop search for user %s", user_id)
+
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         if update.message is None:
@@ -346,14 +364,22 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(await tr(user, "default_searching"))
             return
 
+        
         # --- Чат ---
         if await is_in_chat(user_id):
+            # обновим user — после матча в БД companion_id может появиться
+            user = await get_user(user_id)
             companion_id = user.get("companion_id")
-            if text == await tr(user, "btn_end"):
+        
+            # правильная проверка на кнопку завершения — используем тот ключ, что в kb_chat
+            if text == await tr(user, "btn_end_chat"):
                 await end_dialog(user_id, context)
                 return
+        
             if text == await tr(user, "btn_new_partner"):
+                # пользователь хочет нового партнёра — тихо закрываем текущий диалог
                 await end_dialog(user_id, context, silent=True)
+                # вернём пользователя в меню (и покажем главное меню)
                 try:
                     await update_user_state(user_id, "menu")
                     user = await get_user(user_id)
@@ -361,10 +387,15 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except Exception:
                     logger.exception("Failed to set state=menu after new_partner for user %s", user_id)
                 return
+        
+            # если есть компаньон — пересылаем текст
             if companion_id:
-                await context.bot.send_message(companion_id, text=text)
-                await increment_messages(user_id)
-                await increment_messages(companion_id)
+                try:
+                    await context.bot.send_message(companion_id, text=text)
+                    await increment_messages(user_id)
+                    await increment_messages(companion_id)
+                except Exception:
+                    logger.exception("Failed to forward chat message from %s to %s", user_id, companion_id)
             return
 
         # --- Предложения ---
