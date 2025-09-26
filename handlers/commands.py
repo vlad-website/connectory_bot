@@ -26,7 +26,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_state(user_id, "menu")
         user = await get_user(user_id)
         await update.message.reply_text(
-            await tr_lang(user["lang"], "main_menu"),
+            tr_lang(user["lang"], "main_menu"),
             reply_markup=await kb_main_menu(user)
         )
         return
