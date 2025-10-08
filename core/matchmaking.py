@@ -1,5 +1,8 @@
+# core/matchmaking.py
 import asyncio
+import logging
 from collections import deque
+from typing import Deque, Dict
 
 from db.user_queries import (
     get_user,
@@ -7,109 +10,143 @@ from db.user_queries import (
     update_user_companion,
 )
 from handlers.keyboards import kb_chat
-from core.i18n import tr_lang  # локализация строк
+from core.i18n import tr_lang            # синхронная функция локализации
 
-# Человекочитаемые названия языков
-language_names = {
-    "ru": "Русский",     "uk": "Українська",
-    "en": "English",     "es": "Español",
-    "fr": "Français",    "de": "Deutsch",
-}
+logger = logging.getLogger(__name__)
 
 # ---------- очередь поиска ----------
-queue: deque[int] = deque()
-active_search_tasks: dict[int, asyncio.Task] = {}
+queue: Deque[int] = deque()
+active_search_tasks: Dict[int, asyncio.Task] = {}
+
+# ---------- убрать пользователя из очереди + отменить таску ----------
+async def remove_from_queue(user_id: int):
+    try:
+        queue.remove(user_id)
+    except ValueError:
+        pass
+
+    task = active_search_tasks.pop(user_id, None)
+    if task and not task.done():
+        try:
+            task.cancel()
+        except Exception:
+            logger.exception("Failed to cancel search retry task for user %s", user_id)
 
 # ---------- добавить в очередь / найти пару ----------
 async def add_to_queue(user_id: int, theme: str, sub: str, context):
+    """
+    Добавляет пользователя в очередь и пытается найти пару.
+    sub — ключ подтемы (например 'any_sub' или конкретный ключ из TOPICS).
+    """
     user = await get_user(user_id)
+    if not user:
+        logger.debug("add_to_queue: user not found %s", user_id)
+        return
 
-    # ❶ Пытаемся найти подходящего собеседника
+    # пытаемся найти подходящего собеседника
     for other_id in list(queue):
+        if other_id == user_id:
+            continue
         other = await get_user(other_id)
         if not other:
             continue
-        if other_id == user_id:
-            continue  # нельзя матчить самого себя
 
-        same_theme = other["theme"] == theme
-        sub_match = (
-            sub == other["sub"]
-            or sub == "Любая подтема"
-            or other["sub"] == "Любая подтема"
-        )
+        same_theme = (other.get("theme") == theme)
+        # canonical check: 'any_sub' is the wildcard key stored in DB
+        sub_match = (sub == other.get("sub") or sub == "any_sub" or other.get("sub") == "any_sub")
 
         if same_theme and sub_match:
-            queue.remove(other_id)  # убираем из очереди
+            # удаляем найденного из очереди (и при необходимости - текущего)
+            try:
+                queue.remove(other_id)
+            except ValueError:
+                pass
+            try:
+                if user_id in queue:
+                    queue.remove(user_id)
+            except ValueError:
+                pass
 
-            # ❷ Обоих переводим в state = chatting
+            # обновляем БД — ставим в чат и проставляем компаньонов
             await update_user_state(user_id, "chatting")
             await update_user_state(other_id, "chatting")
             await update_user_companion(user_id, other_id)
             await update_user_companion(other_id, user_id)
 
-            # ❸ Формируем подписи под-тем
-            sub_a = sub if sub != "Любая подтема" else other["sub"]
-            sub_b = other["sub"] if other["sub"] != "Любая подтема" else sub
+            # Отменяем таймеры поиска (если были)
+            t1 = active_search_tasks.pop(user_id, None)
+            if t1 and not t1.done():
+                try: t1.cancel()
+                except Exception: logger.exception("Failed to cancel retry task for %s", user_id)
+            t2 = active_search_tasks.pop(other_id, None)
+            if t2 and not t2.done():
+                try: t2.cancel()
+                except Exception: logger.exception("Failed to cancel retry task for %s", other_id)
 
-            # ❹ Локализованный вывод
-            lang_a = language_names.get(user["lang"], user["lang"])
-            lang_b = language_names.get(other["lang"], other["lang"])
+            # Формируем подписи под-тем (используем ключи, tr_lang их локализует)
+            sub_a = sub if sub != "any_sub" else other.get("sub")
+            sub_b = other.get("sub") if other.get("sub") != "any_sub" else sub
 
-            # Сообщения об успешном поиске
-            await context.bot.send_message(
-                user_id,
-                tr_lang(
-                    user["lang"],
-                    "found",
-                    theme=theme,
-                    sub=sub_a,
-                    lang=lang_b,
-                ),
-                reply_markup=await kb_chat(user),
-            )
-            await context.bot.send_message(
-                other_id,
-                tr_lang(
-                    other["lang"],
-                    "found",
-                    theme=theme,
-                    sub=sub_b,
-                    lang=lang_a,
-                ),
-                reply_markup=await kb_chat(other),
-            )
-            return  # важен выход после успеха
+            lang_a = language_names.get(user.get("lang"), user.get("lang"))
+            lang_b = language_names.get(other.get("lang"), other.get("lang"))
 
+            # Подготовим клавиатуры — НЕ передаём coroutine в send_message
+            try:
+                markup_a = await kb_chat(user)    # правильно await + передаём user
+            except Exception:
+                logger.exception("Failed to build chat keyboard for user %s", user_id)
+                markup_a = None
+
+            try:
+                markup_b = await kb_chat(other)
+            except Exception:
+                logger.exception("Failed to build chat keyboard for user %s", other_id)
+                markup_b = None
+
+            # Отправляем уведомления (локализуем tr_lang, он синхронный)
+            msg_a = tr_lang(user.get("lang"), "found", theme=theme, sub=sub_a, lang=lang_b)
+            msg_b = tr_lang(other.get("lang"), "found", theme=theme, sub=sub_b, lang=lang_a)
+
+            try:
+                await context.bot.send_message(user_id, msg_a, reply_markup=markup_a)
+            except Exception:
+                logger.exception("Failed to send 'found' message to %s", user_id)
+
+            try:
+                await context.bot.send_message(other_id, msg_b, reply_markup=markup_b)
+            except Exception:
+                logger.exception("Failed to send 'found' message to %s", other_id)
+
+            logger.info("Matched %s <-> %s (theme=%s sub=%s/%s)", user_id, other_id, theme, sub_a, sub_b)
+            return  # выход после удачного матча
+
+    # если пары нет — ставим в очередь и запускаем таймер
     if user_id in queue:
-        return  # уже в очереди
-    # ❺ Пары нет — ставим в очередь и запускаем таймер
+        return
+
     queue.append(user_id)
     task = asyncio.create_task(retry_search(user_id, theme, sub, context))
     active_search_tasks[user_id] = task
 
-
 # ---------- повторный поиск через 60 с ----------
 async def retry_search(user_id: int, theme: str, sub: str, context):
-    await asyncio.sleep(60)
-    user = await get_user(user_id)
-    if user and user["state"] == "searching":
-        await context.bot.send_message(
-            user_id,
-            "⏳ Всё ещё ищем собеседника... Попробуем ещё раз.",
-        )
-        await add_to_queue(user_id, theme, sub, context)
-
+    try:
+        await asyncio.sleep(60)
+        user = await get_user(user_id)
+        if user and user.get("state") == "searching":
+            try:
+                await context.bot.send_message(user_id, tr_lang(user.get("lang"), "still_searching"))
+            except Exception:
+                logger.exception("Failed to send still_searching to %s", user_id)
+            # повторяем попытку
+            await add_to_queue(user_id, theme, sub, context)
+    except asyncio.CancelledError:
+        # нормальная отмена — ничего не логируем
+        return
+    except Exception:
+        logger.exception("retry_search failed for %s", user_id)
 
 # ---------- утилиты ----------
 async def is_in_chat(user_id: int) -> bool:
     user = await get_user(user_id)
     return bool(user and user.get("state") == "chatting")
-
-
-async def remove_from_queue(user_id: int):
-    """Убираем пользователя из очереди, если он там есть."""
-    try:
-        queue.remove(user_id)
-    except ValueError:
-        pass
