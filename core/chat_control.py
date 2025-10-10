@@ -1,6 +1,9 @@
+# core/chat_control.py
+import logging
 from db.user_queries import get_user, update_user_state, update_user_companion
-from handlers.keyboards import kb_main_menu
-from core.i18n import tr
+from handlers.keyboards import kb_after_sub
+
+logger = logging.getLogger(__name__)
 
 async def end_dialog(user_id: int, context, silent: bool = False):
     """
@@ -13,38 +16,46 @@ async def end_dialog(user_id: int, context, silent: bool = False):
 
     companion_id = user.get("companion_id")
 
-    # текущего переводим в меню
+    # переводим текущего пользователя в меню
     await update_user_state(user_id, "menu")
     await update_user_companion(user_id, None)
 
-    # собеседника тоже сбрасываем
+    # переводим собеседника, если есть
     if companion_id:
         await update_user_state(companion_id, "menu")
         await update_user_companion(companion_id, None)
 
-    # silent-режим → уведомляем только собеседника
+    # Тихий режим — только сообщаем второй стороне об отключении (без details)
     if silent:
         if companion_id:
-            companion = await get_user(companion_id)
-            if companion:
+            other = await get_user(companion_id)
+            try:
                 await context.bot.send_message(
                     companion_id,
-                    await tr(companion, "chat_ended_partner"),
-                    reply_markup=await kb_main_menu(companion),
+                    "💬 Собеседник отключился.",
+                    reply_markup=await kb_after_sub(other) if other else None
                 )
+            except Exception:
+                logger.exception("Failed to notify companion %s about silent end", companion_id)
         return
 
-    # обычный выход → оба получают сообщение
-    await context.bot.send_message(
-        user_id,
-        await tr(user, "chat_ended"),
-        reply_markup=await kb_main_menu(user),
-    )
+    # Обычный режим — уведомляем обе стороны
+    try:
+        await context.bot.send_message(
+            user_id,
+            "💬 Диалог завершён.",
+            reply_markup=await kb_after_sub(user)
+        )
+    except Exception:
+        logger.exception("Failed to notify user %s about dialog end", user_id)
+
     if companion_id:
-        companion = await get_user(companion_id)
-        if companion:
+        other = await get_user(companion_id)
+        try:
             await context.bot.send_message(
                 companion_id,
-                await tr(companion, "chat_ended_partner"),
-                reply_markup=await kb_main_menu(companion),
+                "❌ Собеседник завершил диалог.",
+                reply_markup=await kb_after_sub(other) if other else None
             )
+        except Exception:
+            logger.exception("Failed to notify companion %s about dialog end", companion_id)
