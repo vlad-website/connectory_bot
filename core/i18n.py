@@ -1110,8 +1110,25 @@ TEXTS = {
 }
 
 def tr_lang(lang: str, key: str, **kw) -> str:
+    """
+    Безопасный перевод по ключу и языку.
+    Если нет нужного ключа или параметра для .format — просто возвращает шаблон без падения.
+    """
     lang = lang if lang in TEXTS else "ru"
-    return TEXTS[lang].get(key, key).format(**kw)
+
+    try:
+        template = TEXTS.get(lang, {}).get(key)
+        if not template:
+            # если ключа нет для этого языка — fallback на английский или ключ
+            template = TEXTS.get("en", {}).get(key, key)
+
+        # безопасное форматирование (если не хватает аргументов — не упадёт)
+        return template.format(**kw)
+    except Exception:
+        logging.exception(f"tr_lang error for lang={lang}, key={key}, kw={kw}")
+        # возвращаем "сырой" текст (чтобы бот не молчал)
+        return TEXTS.get(lang, {}).get(key, key)
+
 
 async def tr(user, key: str, **kw) -> str:
     lang = "ru"
@@ -1122,7 +1139,9 @@ async def tr(user, key: str, **kw) -> str:
         row = await get_user(user.id)
         if row:
             lang = row.get("lang", "ru")
+
     return tr_lang(lang, key, **kw)
+
 
 async def tr_user(user_obj, key: str, **kw) -> str:
     return await tr(user_obj, key, **kw)
