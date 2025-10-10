@@ -108,8 +108,8 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
                 markup_b = None
 
             # Локализованные тексты (tr_lang — синхронная)
-            msg_a = tr_lang(user.get("lang"), "found", theme=theme, sub=sub_a, lang=lang_b)
-            msg_b = tr_lang(other.get("lang"), "found", theme=theme, sub=sub_b, lang=lang_a)
+            msg_a = tr_lang(user.get("lang"), "found", theme=theme, sub=sub_a)
+            msg_b = tr_lang(lang_b, "found", theme=theme, sub=sub_b)
 
             # Отправляем сообщения — оборачиваем в try/except чтобы не ломать процесс
             try:
