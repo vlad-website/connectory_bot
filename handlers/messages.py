@@ -379,6 +379,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if text == await tr(user, "btn_new_partner"):
                 # пользователь хочет нового партнёра — тихо закрываем текущий диалог
                 await end_dialog(user_id, context, silent=True)
+                user = await get_user(user_id)
                 # вернём пользователя в меню (и покажем главное меню)
                 try:
                     await update_user_state(user_id, "menu")
@@ -454,6 +455,18 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logger.exception("Failed to set state=menu after suggest for user %s", user_id)
             return
 
+
+
+        
+        # --- Безопасный возврат в меню ---
+        if user and user.get("state") == "menu":
+            await update.message.reply_text(
+                await tr(user, "main_menu"),
+                reply_markup=await kb_main_menu(user)
+            )
+            return
+
+        
         # --- Фолбэк ---
         await update.message.reply_text(await tr(user, "error_fallback"))
 
