@@ -17,12 +17,12 @@ async def end_dialog(user_id: int, context, silent: bool = False):
     companion_id = user.get("companion_id")
 
     # переводим текущего пользователя в меню
-    await update_user_state(user_id, "menu")
+    await update_user_state(user_id, "after_sub")
     await update_user_companion(user_id, None)
 
     # переводим собеседника, если есть
     if companion_id:
-        await update_user_state(companion_id, "menu")
+        await update_user_state(companion_id, "after_sub")
         await update_user_companion(companion_id, None)
 
     # Тихий режим — только сообщаем второй стороне об отключении (без details)
