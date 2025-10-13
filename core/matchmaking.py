@@ -107,10 +107,19 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
                 logger.exception("Failed to build chat keyboard for user %s", other_id)
                 markup_b = None
 
+
+            # Получаем переводы темы и подтем
+            theme_a_local = tr_lang(lang_a, theme)
+            theme_b_local = tr_lang(lang_b, theme)
+            sub_a_local = tr_lang(lang_a, sub_a)
+            sub_b_local = tr_lang(lang_b, sub_b)
+
+            
             # Локализованные тексты (tr_lang — синхронная)
             # Сообщение о найденном собеседнике (учитываем язык и безопасные переводы)
-            msg_a = tr_lang(lang_a, "found", theme=theme, sub=sub_a, companion_lang=language_names.get(lang_b, lang_b))
-            msg_b = tr_lang(lang_b, "found", theme=theme, sub=sub_b, companion_lang=language_names.get(lang_a, lang_a))
+            msg_a = tr_lang(lang_a, "found", theme=theme_a_local, sub=sub_a_local, companion_lang=language_names.get(lang_b, lang_b))
+            msg_b = tr_lang(lang_b, "found", theme=theme_b_local, sub=sub_b_local, companion_lang=language_names.get(lang_a, lang_a))
+
 
 
 
