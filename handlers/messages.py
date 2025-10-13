@@ -201,6 +201,45 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logger.exception("Menu action %s failed for user %s", action, user_id)
                     await update.message.reply_text("❌ Ошибка. Попробуйте ещё раз.")
                 return
+
+        # --- AFTER_SUB ---
+        elif state == "after_sub":
+            text = update.message.text
+            logger.debug("AFTER_SUB: user=%s text=%r", user_id, text)
+    
+            if text == await tr(user, "btn_search"):
+                await update_user_state(user_id, "searching")
+                await update.message.reply_text(
+                    await tr(user, "searching_message")
+                )
+                # здесь вставь вызов функции поиска, если она у тебя есть, например:
+                # await start_search(user_id, context)
+                return
+    
+            elif text == await tr(user, "btn_change_sub"):
+                await update_user_state(user_id, "choose_sub")
+                await update.message.reply_text(await tr(user, "choose_sub"))
+                return
+    
+            elif text == await tr(user, "btn_main_menu"):
+                await update_user_state(user_id, "menu")
+                await update.message.reply_text(
+                    await tr(user, "main_menu"),
+                    reply_markup=await kb_main_menu(user)
+                )
+                return
+    
+            elif text == await tr(user, "btn_support"):
+                await update.message.reply_text(await tr(user, "support_message"))
+                return
+    
+            else:
+                await update.message.reply_text(await tr(user, "pls_start"))
+                return
+        
+
+
+
         
         # --- Тема ---
         if state == "theme":
