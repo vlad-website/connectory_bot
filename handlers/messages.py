@@ -218,17 +218,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
             elif text == await tr(user, "btn_change_sub"):
                 await update_user_state(user_id, "choose_sub")
-                # Показываем текст + клавиатуру подтем
-                try:
-                    from handlers.keyboards import kb_subthemes
-                    markup = await kb_subthemes(user)
-                    await update.message.reply_text(
-                        await tr(user, "choose_sub"),
-                        reply_markup=markup
-                    )
-                except Exception:
-                    logger.exception("Failed to build subtheme keyboard for user %s", user_id)
-                    await update.message.reply_text(await tr(user, "choose_sub"))
+                await update.message.reply_text(await tr(user, "choose_sub"))
                 return
     
             elif text == await tr(user, "btn_main_menu"):
