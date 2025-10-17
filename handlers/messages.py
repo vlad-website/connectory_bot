@@ -361,12 +361,16 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             if text == await tr(user, "btn_change_theme"):
                 try:
-                    await update_user_state(user_id, "theme")
+                    # переключаем состояние
+                    await update_user_state(user_id, "theme")  # ✅ если у тебя в основном коде состояние именно "theme"
                     user = await get_user(user_id)
+            
                     from handlers.keyboards import get_topic_keyboard
                     markup = await get_topic_keyboard(user)
+            
+                    # правильный ключ перевода
                     await update.message.reply_text(
-                        await tr(user, "choose_topic"),
+                        await tr(user, "choose_theme"),
                         reply_markup=markup
                     )
                 except Exception:
