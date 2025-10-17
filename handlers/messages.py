@@ -359,6 +359,21 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logger.exception("Failed to change sub for user %s", user_id)
                 return
 
+            if text == await tr(user, "btn_change_theme"):
+                try:
+                    await update_user_state(user_id, "theme")
+                    user = await get_user(user_id)
+                    from handlers.keyboards import get_topic_keyboard
+                    markup = await get_topic_keyboard(user)
+                    await update.message.reply_text(
+                        await tr(user, "choose_topic"),
+                        reply_markup=markup
+                    )
+                except Exception:
+                    logger.exception("Failed to change theme for user %s", user_id)
+                    await update.message.reply_text("❌ Ошибка при смене темы. Попробуйте /start.")
+                return
+            
             if text == await tr(user, "btn_main_menu"):
                 try:
                     await update_user_state(user_id, "menu")
