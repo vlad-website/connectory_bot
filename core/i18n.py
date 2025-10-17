@@ -55,6 +55,7 @@ TEXTS = {
         "pls_start": "Пожалуйста, отправьте /start.",
         "btn_end_chat": "❌ Завершить диалог",
 		"any_sub": "🔄 Любая подтема",
+		"btn_change_theme": "🌀 Изменить тему",
 
         # Пол
         "gender_male": "Мужской",
@@ -223,6 +224,7 @@ TEXTS = {
         "pls_start": "Будь ласка, надішліть /start.",
         "btn_end_chat": "❌ Завершити діалог",
 	"any_sub": "🔄 Будь-яка підтема",
+		"btn_change_theme": "🌀 Змінити тему",
 
 
 		"btn_start_chat": "🔸 Почати спілкування",
@@ -406,6 +408,7 @@ TEXTS = {
         "pls_start": "Please send /start.",
         "btn_end_chat": "❌ End chat",
 	"any_sub": "🔄 Any subtopic",
+		"btn_change_theme": "🌀 Change topic",
 
 
 		"btn_start_chat": "🔸 Start Chatting",
@@ -590,6 +593,7 @@ TEXTS = {
         "pls_start": "Por favor, envía /start.",
         "btn_end_chat": "❌ Terminar chat",
 	"any_sub": "🔄 Cualquier subtema",
+		"btn_change_theme": "🌀 Cambiar tema",
 
 
 		"btn_start_chat": "🔸 Comenzar a chatear",
@@ -774,6 +778,7 @@ TEXTS = {
         "pls_start": "Veuillez envoyer /start.",
         "btn_end_chat": "❌ Terminer la discussion",
 	"any_sub": "🔄 N'importe quel sous-thème",
+		"btn_change_theme": "🌀 Changer de thème",
 
 		"btn_start_chat": "🔸 Commencer à discuter",
 		"btn_stats": "📊 Mes statistiques",
@@ -956,6 +961,7 @@ TEXTS = {
         "pls_start": "Bitte sende /start.",
         "btn_end_chat": "❌ Chat beenden",
 	"any_sub": "🔄 Beliebiges Unterthema",
+		"btn_change_theme": "🌀 Thema ändern",
 
 
 		"btn_start_chat": "🔸 Chat starten",
