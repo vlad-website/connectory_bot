@@ -361,18 +361,19 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             if text == await tr(user, "btn_change_theme"):
                 try:
-                    # переключаем состояние
-                    await update_user_state(user_id, "theme")  # ✅ если у тебя в основном коде состояние именно "theme"
+                    await update_user_state(user_id, "theme")
                     user = await get_user(user_id)
             
                     from handlers.keyboards import get_topic_keyboard
                     markup = await get_topic_keyboard(user)
             
-                    # правильный ключ перевода
+                    # Показываем клавиатуру и выходим, чтобы не ловить это сообщение снова
                     await update.message.reply_text(
                         await tr(user, "choose_theme"),
                         reply_markup=markup
                     )
+                    return  # ✅ критически важно: иначе бот подумает, что пользователь уже выбрал тему
+            
                 except Exception:
                     logger.exception("Failed to change theme for user %s", user_id)
                     await update.message.reply_text("❌ Ошибка при смене темы. Попробуйте /start.")
