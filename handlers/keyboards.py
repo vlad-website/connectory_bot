@@ -30,7 +30,7 @@ async def kb_after_sub(user):
     return ReplyKeyboardMarkup(
         [
             [await tr(user, "btn_search")],         # 🔍 Начать поиск
-            [await tr(user, "btn_change_sub")],     # ♻️ Сменить подтему
+            [await tr(user, "btn_change_sub"), await tr(user, "btn_change_sub")],  # 🆕 Изменить тему / подтему
             [await tr(user, "btn_main_menu")],       # 🏠 Главное меню
             [await tr(user, "btn_support")]        # ❤️ Поддержать проект
         ],
