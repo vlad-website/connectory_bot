@@ -177,10 +177,24 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 action = menu_actions[matched_key]
                 try:
                     if action == "theme":
+                        # 1️⃣ Сначала обновляем состояние
                         await update_user_state(user_id, "theme")
+                    
+                        # 2️⃣ Обновляем пользователя, чтобы гарантировать правильный язык и состояние
                         user = await get_user(user_id)
+                    
+                        # 3️⃣ Отправляем клавиатуру выбора темы
                         try:
-                            await update.message.reply_text(await tr(user, "pick_theme"), reply_markup=await get_topic_keyboard(user))
+                            from handlers.keyboards import get_topic_keyboard
+                            markup = await get_topic_keyboard(user)
+                    
+                            await update.message.reply_text(
+                                await tr(user, "choose_topic"),  # <-- правильный ключ перевода
+                                reply_markup=markup
+                            )
+                    
+                            logger.debug("STATE CHANGE: user=%s set to 'theme' from 'menu'", user_id)
+
                         except Exception:
                             # если клавиатура/тема упали — логируем и даём понятное сообщение
                             logger.exception("Failed to send topic keyboard to user %s", user_id)
