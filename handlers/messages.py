@@ -189,7 +189,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             markup = await get_topic_keyboard(user)
                     
                             await update.message.reply_text(
-                                await tr(user, "choose_topic"),  # <-- правильный ключ перевода
+                                await tr(user, "pick_theme"),  # <-- правильный ключ перевода
                                 reply_markup=markup
                             )
                     
