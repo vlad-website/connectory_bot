@@ -15,6 +15,8 @@ from core.chat_control import end_dialog
 from handlers.admin import send_admin_stats
 from config import ADMIN_IDS
 
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
 
 
 
@@ -465,12 +467,23 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # если есть компаньон — пересылаем текст
             if companion_id:
                 try:
-                    await context.bot.send_message(companion_id, text=text)
+                    companion = await get_user(companion_id)
+                    lang_from = user.get("lang", "en")
+                    lang_to = companion.get("lang", "en")
+            
+                    reply_markup = None
+                    if lang_from != lang_to:
+                        cb_data = f"tr|{lang_from}|{lang_to}|{text[:200]}"
+                        reply_markup = InlineKeyboardMarkup([
+                            [InlineKeyboardButton("🌐 Показать перевод", callback_data=cb_data)]
+                        ])
+            
+                    await context.bot.send_message(companion_id, text=text, reply_markup=reply_markup)
                     await increment_messages(user_id)
                     await increment_messages(companion_id)
                 except Exception:
                     logger.exception("Failed to forward chat message from %s to %s", user_id, companion_id)
-            return
+                return
 
         # --- Предложения ---
         if state == "suggest":
