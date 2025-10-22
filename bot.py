@@ -16,6 +16,12 @@ from db.init_db import init_db
 from handlers.commands import start, choose_lang, register_handlers as register_commands_handlers
 from handlers.messages import message_handler
 
+from telegram.ext import CallbackQueryHandler
+from handlers.messages import callback_query_handler
+
+application.add_handler(CallbackQueryHandler(callback_query_handler))
+
+
 # -------------------- Настройка логирования --------------------
 os.environ["PYTHONUNBUFFERED"] = "1"  # flush stdout
 
