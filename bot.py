@@ -19,7 +19,7 @@ from handlers.messages import message_handler
 from telegram.ext import CallbackQueryHandler
 from handlers.messages import callback_query_handler
 
-application.add_handler(CallbackQueryHandler(callback_query_handler))
+
 
 
 # -------------------- Настройка логирования --------------------
@@ -57,6 +57,8 @@ register_commands_handlers(application)
 
 # Сообщения — group 1, только текст и не команды
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler), group=1)
+
+application.add_handler(CallbackQueryHandler(callback_query_handler))
 
 # -------------------- Вебхук --------------------
 async def handle_webhook(request):
