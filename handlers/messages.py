@@ -562,3 +562,20 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Произошла ошибка — попробуйте /start или сообщите администратору.")
         except Exception:
             logger.exception("Also failed to notify user after handler exception")
+
+
+# 👇 А вот здесь добавляешь обработчик inline-кнопок:
+# ---------------------------------------------------------
+
+from core.translator import translate_text
+
+async def callback_query_handler(update, context):
+    query = update.callback_query
+    data = query.data
+
+    if data.startswith("tr|"):
+        _, lang_from, lang_to, text = data.split("|", 3)
+        await query.answer("Перевожу...")
+        translated = await translate_text(text, lang_from, lang_to)
+        await query.message.reply_text(f"🔤 {translated}")
+        return
