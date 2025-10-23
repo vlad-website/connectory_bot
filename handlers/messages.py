@@ -354,13 +354,15 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # --- Меню после подтемы ---
         if state == "menu_after_sub":
             if text == await tr(user, "btn_search"):
+                await update_user_state(user_id, "searching")
+                user = await get_user(user_id)
+                await update.message.reply_text(await tr(user, "searching"), reply_markup=await kb_searching(user))
+            
                 try:
-                    await update_user_state(user_id, "searching")
-                    user = await get_user(user_id)
-                    await update.message.reply_text(await tr(user, "searching"), reply_markup=await kb_searching(user))
                     await add_to_queue(user_id, user["theme"], user["sub"], context)
                 except Exception:
-                    logger.exception("Search setup failed for user %s", user_id)
+                    logger.exception("Queue/match failed for user %s", user_id)
+                    await update_user_state(user_id, "menu_after_sub")
                     await update.message.reply_text(await tr(user, "search_failed"), reply_markup=await kb_after_sub(user))
                 return
 
