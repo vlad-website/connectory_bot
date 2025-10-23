@@ -569,13 +569,27 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 from core.translator import translate_text
 
-async def callback_query_handler(update, context):
+import asyncio
+
+async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = query.data
+    await query.answer()
 
     if data.startswith("tr|"):
-        _, lang_from, lang_to, text = data.split("|", 3)
-        await query.answer("Перевожу...")
-        translated = await translate_text(text, lang_from, lang_to)
-        await query.message.reply_text(f"🔤 {translated}")
+        _, user_id, msg_id, text = data.split("|", 3)
+
+        async def send_translation():
+            try:
+                translated = await translate_text(text, target_lang)
+                await context.bot.send_message(user_id, text=translated)
+            except Exception as e:
+                logger.exception("Translation failed for user %s: %s", user_id, e)
+                try:
+                    await context.bot.send_message(user_id, text="⚠️ Ошибка перевода, попробуйте позже.")
+                except Exception:
+                    pass
+
+        # запускаем перевод в фоне — не блокирует чат и поиск
+        asyncio.create_task(send_translation())
         return
