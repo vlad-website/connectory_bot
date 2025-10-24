@@ -218,25 +218,35 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update.message.reply_text("❌ Ошибка. Попробуйте ещё раз.")
                 return
 
+
         # --- AFTER_SUB ---
         elif state == "after_sub":
             text = update.message.text
             logger.debug("AFTER_SUB: user=%s text=%r", user_id, text)
-    
+        
             if text == await tr(user, "btn_search"):
-                await update_user_state(user_id, "searching")
-                await update.message.reply_text(
-                    await tr(user, "searching_message")
-                )
-                # здесь вставь вызов функции поиска, если она у тебя есть, например:
-                # await start_search(user_id, context)
+                try:
+                    await update_user_state(user_id, "searching")
+                    await update.message.reply_text(
+                        await tr(user, "searching_message"),
+                        reply_markup=await kb_searching(user)
+                    )
+                    # запускаем поиск
+                    await add_to_queue(user_id, user["theme"], user["sub"], context)
+        
+                except Exception:
+                    logger.exception("Search setup failed for user %s", user_id)
+                    # НЕ сбрасываем клавиатуру, просто даём мягкое уведомление
+                    await update.message.reply_text(
+                        await tr(user, "searching_retry")
+                    )
                 return
-    
+        
             elif text == await tr(user, "btn_change_sub"):
                 await update_user_state(user_id, "choose_sub")
                 await update.message.reply_text(await tr(user, "choose_sub"))
                 return
-    
+        
             elif text == await tr(user, "btn_main_menu"):
                 await update_user_state(user_id, "menu")
                 await update.message.reply_text(
@@ -244,11 +254,11 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     reply_markup=await kb_main_menu(user)
                 )
                 return
-    
+        
             elif text == await tr(user, "btn_support"):
                 await update.message.reply_text(await tr(user, "support_message"))
                 return
-    
+        
             else:
                 await update.message.reply_text(await tr(user, "pls_start"))
                 return
