@@ -68,8 +68,8 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
                 pass
 
             # Обновляем состояние и компаньонов в БД
-            await update_user_state(user_id, "chatting")
-            await update_user_state(other_id, "chatting")
+            await update_user_state(user_id, "chat")
+            await update_user_state(other_id, "chat")
             await update_user_companion(user_id, other_id)
             await update_user_companion(other_id, user_id)
 
