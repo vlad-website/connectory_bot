@@ -20,6 +20,7 @@ TEXTS = {
         "support_thanks": "🙏 Спасибо за поддержку!\n(Здесь будет ссылка на донат)",
 		"chat_ended": "💬 Диалог завершён. Возврат в главное меню.",
 		"chat_ended_partner": "❌ Собеседник завершил диалог. Вы в главном меню.",
+		"searching_retry": "🔍 Всё ещё ищем собеседника... Если поиск затянулся, попробуйте снова.",
 
 
 		"search_stop": "❌ Поиск остановлен.",
@@ -214,6 +215,7 @@ TEXTS = {
 		"chat_ended": "💬 Діалог завершено. Повернення до головного меню.",
 		"chat_ended_partner": "❌ Співрозмовник завершив діалог. Ви в головному меню.",
 		"search_stop": "❌ Пошук зупинено.",
+		"searching_retry": "🔍 Все ще шукаємо співрозмовника... Якщо пошук триває занадто довго, спробуйте ще раз.",
 
         "btn_start": "Почати",
         "btn_search": "🔍 Почати пошук",
@@ -399,6 +401,7 @@ TEXTS = {
 		"chat_ended": "💬 Chat ended. Returning to the main menu.",
 		"chat_ended_partner": "❌ Your partner ended the chat. You are now in the main menu.",
 		"search_stop": "❌ Search stopped.",
+		"searching_retry": "🔍 Still searching for a partner... If it takes too long, try again.",
 
         "btn_start": "Start",
         "btn_search": "🔍 Start search",
@@ -585,6 +588,7 @@ TEXTS = {
 		"chat_ended": "💬 El chat ha terminado. Regresando al menú principal.",
 		"chat_ended_partner": "❌ Tu compañero terminó el chat. Ahora estás en el menú principal.",
 		"search_stop": "❌ Búsqueda detenida.",
+		"searching_retry": "🔍 Todavía buscando un compañero... Si tarda demasiado, inténtalo de nuevo.",
 
         "btn_start": "Comenzar",
         "btn_search": "🔍 Buscar",
@@ -771,6 +775,7 @@ TEXTS = {
 		"chat_ended": "💬 Conversation terminée. Retour au menu principal.",
 		"chat_ended_partner": "❌ Votre partenaire a mis fin à la conversation. Vous êtes dans le menu principal.",
 		"search_stopped": "❌ Recherche arrêtée.",
+		"searching_retry": "🔍 Recherche en cours... Si cela prend trop de temps, réessayez.",
 
         "btn_start": "Commencer",
         "btn_search": "🔍 Lancer la recherche",
@@ -955,6 +960,7 @@ TEXTS = {
 		"chat_ended": "💬 Chat beendet. Zurück zum Hauptmenü.",
 		"chat_ended_partner": "❌ Dein Gesprächspartner hat den Chat beendet. Du bist jetzt im Hauptmenü.",
 		"search_stop": "❌ Suche gestoppt.",
+		"searching_retry": "🔍 Suche läuft noch... Wenn es zu lange dauert, versuchen Sie es erneut.",
 
         "btn_start": "Start",
         "btn_search": "🔍 Suche starten",
