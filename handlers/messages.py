@@ -76,6 +76,55 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.debug("message_handler: user=%s state=%s text=%r lang=%s",
                      user_id, state, text, user.get("lang"))
 
+
+        # --- Чат ---
+        if await is_in_chat(user_id):
+            # обновим user — после матча в БД companion_id может появиться
+            user = await get_user(user_id)
+            companion_id = user.get("companion_id")
+        
+            # правильная проверка на кнопку завершения — используем тот ключ, что в kb_chat
+            if text == await tr(user, "btn_end_chat"):
+                await end_dialog(user_id, context)
+                return
+        
+            if text == await tr(user, "btn_new_partner"):
+                # пользователь хочет нового партнёра — тихо закрываем текущий диалог
+                await end_dialog(user_id, context, silent=True)
+                user = await get_user(user_id)
+                # вернём пользователя в меню (и покажем главное меню)
+                try:
+                    await update_user_state(user_id, "menu")
+                    user = await get_user(user_id)
+                    await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+                except Exception:
+                    logger.exception("Failed to set state=menu after new_partner for user %s", user_id)
+                return
+        
+            # если есть компаньон — пересылаем текст
+            if companion_id:
+                try:
+                    companion = await get_user(companion_id)
+                    lang_from = user.get("lang", "en")
+                    lang_to = companion.get("lang", "en")
+            
+                    reply_markup = None
+                    if lang_from != lang_to:
+                        cb_data = f"tr|{lang_from}|{lang_to}|{text[:200]}"
+                        reply_markup = InlineKeyboardMarkup([
+                            [InlineKeyboardButton("🌐 Показать перевод", callback_data=cb_data)]
+                        ])
+            
+                    await context.bot.send_message(companion_id, text=text, reply_markup=reply_markup)
+                    await increment_messages(user_id)
+                    await increment_messages(companion_id)
+                except Exception:
+                    logger.exception("Failed to forward chat message from %s to %s", user_id, companion_id)
+                return
+
+        
+
+        
         # --- STOP ---
         stop_label = await tr(user, "btn_stop")
         if text == stop_label:
@@ -364,61 +413,82 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # --- Меню после подтемы ---
         if state == "menu_after_sub":
             if text == await tr(user, "btn_search"):
-                await update_user_state(user_id, "searching")
-                user = await get_user(user_id)
-                await update.message.reply_text(await tr(user, "searching"), reply_markup=await kb_searching(user))
-            
                 try:
+                    await update_user_state(user_id, "searching")
+                    user = await get_user(user_id)
+                    # ключ выровнен с i18n (раньше в логах был searching_message)
+                    await update.message.reply_text(
+                        await tr(user, "searching_message"),
+                        reply_markup=await kb_searching(user)
+                    )
+        
                     await add_to_queue(user_id, user["theme"], user["sub"], context)
                 except Exception:
                     logger.exception("Queue/match failed for user %s", user_id)
+                    # вернёмся в предыдущее меню и покажем клавиатуру после подтемы
                     await update_user_state(user_id, "menu_after_sub")
-                    await update.message.reply_text(await tr(user, "search_failed"), reply_markup=await kb_after_sub(user))
+                    user = await get_user(user_id)
+                    await update.message.reply_text(
+                        await tr(user, "search_failed"),
+                        reply_markup=await kb_after_sub(user)
+                    )
                 return
-
+        
             if text == await tr(user, "btn_change_sub"):
                 try:
                     await update_user_state(user_id, "sub")
                     user = await get_user(user_id)
                     subtopics = TOPICS[user["theme"]] + ["any_sub"]
                     keyboard = [[await tr(user, s)] for s in subtopics]
-                    await update.message.reply_text(await tr(user, "choose_sub"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
+                    # 👉 Добавляем "Главное меню", чтобы можно было вернуться
+                    keyboard.append([await tr(user, "btn_main_menu")])
+                    await update.message.reply_text(
+                        await tr(user, "choose_sub"),
+                        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+                    )
                 except Exception:
                     logger.exception("Failed to change sub for user %s", user_id)
                 return
-
+        
             if text == await tr(user, "btn_change_theme"):
                 try:
                     await update_user_state(user_id, "theme")
                     user = await get_user(user_id)
-            
+        
                     from handlers.keyboards import get_topic_keyboard
                     markup = await get_topic_keyboard(user)
-            
-                    # Показываем клавиатуру и выходим, чтобы не ловить это сообщение снова
+        
                     await update.message.reply_text(
-                        await tr(user, "choose_theme"),
+                        await tr(user, "choose_theme"),  # ты добавил этот ключ — оставляем его
                         reply_markup=markup
                     )
-                    return  # ✅ критически важно: иначе бот подумает, что пользователь уже выбрал тему
-            
+                    return  # критично важно, чтобы не ловить это сообщение снова
                 except Exception:
                     logger.exception("Failed to change theme for user %s", user_id)
                     await update.message.reply_text("❌ Ошибка при смене темы. Попробуйте /start.")
                 return
-            
+        
             if text == await tr(user, "btn_main_menu"):
                 try:
                     await update_user_state(user_id, "menu")
                     user = await get_user(user_id)
-                    await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+                    await update.message.reply_text(
+                        await tr(user, "main_menu"),
+                        reply_markup=await kb_main_menu(user)
+                    )
                 except Exception:
                     logger.exception("Failed to return to menu from menu_after_sub for user %s", user_id)
                 return
-
+        
             if text == await tr(user, "btn_support"):
-                await update.message.reply_text(await tr(user, "support_thanks"), reply_markup=await kb_after_sub(user))
+                await update.message.reply_text(
+                    await tr(user, "support_thanks"),
+                    reply_markup=await kb_after_sub(user)
+                )
                 return
+
+
+        
 
         # --- Поиск ---
         if state == "searching":
@@ -452,50 +522,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         
-        # --- Чат ---
-        if await is_in_chat(user_id):
-            # обновим user — после матча в БД companion_id может появиться
-            user = await get_user(user_id)
-            companion_id = user.get("companion_id")
-        
-            # правильная проверка на кнопку завершения — используем тот ключ, что в kb_chat
-            if text == await tr(user, "btn_end_chat"):
-                await end_dialog(user_id, context)
-                return
-        
-            if text == await tr(user, "btn_new_partner"):
-                # пользователь хочет нового партнёра — тихо закрываем текущий диалог
-                await end_dialog(user_id, context, silent=True)
-                user = await get_user(user_id)
-                # вернём пользователя в меню (и покажем главное меню)
-                try:
-                    await update_user_state(user_id, "menu")
-                    user = await get_user(user_id)
-                    await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
-                except Exception:
-                    logger.exception("Failed to set state=menu after new_partner for user %s", user_id)
-                return
-        
-            # если есть компаньон — пересылаем текст
-            if companion_id:
-                try:
-                    companion = await get_user(companion_id)
-                    lang_from = user.get("lang", "en")
-                    lang_to = companion.get("lang", "en")
-            
-                    reply_markup = None
-                    if lang_from != lang_to:
-                        cb_data = f"tr|{lang_from}|{lang_to}|{text[:200]}"
-                        reply_markup = InlineKeyboardMarkup([
-                            [InlineKeyboardButton("🌐 Показать перевод", callback_data=cb_data)]
-                        ])
-            
-                    await context.bot.send_message(companion_id, text=text, reply_markup=reply_markup)
-                    await increment_messages(user_id)
-                    await increment_messages(companion_id)
-                except Exception:
-                    logger.exception("Failed to forward chat message from %s to %s", user_id, companion_id)
-                return
+
 
         # --- Предложения ---
         if state == "suggest":
