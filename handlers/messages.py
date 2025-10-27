@@ -413,19 +413,26 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # --- Меню после подтемы ---
         if state == "menu_after_sub":
             if text == await tr(user, "btn_search"):
-                try:
-                    await update_user_state(user_id, "searching")
-                    user = await get_user(user_id)
-                    # ключ выровнен с i18n (раньше в логах был searching_message)
-                    await update.message.reply_text(
-                        await tr(user, "searching_message"),
-                        reply_markup=await kb_searching(user)
-                    )
+                # 1) переводим в searching и показываем клавиатуру поиска — это вне try
+                await update_user_state(user_id, "searching")
+                user = await get_user(user_id)
+                await update.message.reply_text(
+                    await tr(user, "searching_message"),
+                    reply_markup=await kb_searching(user)
+                )
         
+                # 2) пытаемся поставить в очередь/сматчить
+                try:
                     await add_to_queue(user_id, user["theme"], user["sub"], context)
                 except Exception:
                     logger.exception("Queue/match failed for user %s", user_id)
-                    # вернёмся в предыдущее меню и покажем клавиатуру после подтемы
+                    # 3) ПЕРЕПРОВЕРКА: вдруг нас уже перевели в chatting до ошибки?
+                    user = await get_user(user_id)
+                    if user and user.get("state") == "chatting":
+                        # Пара уже найдена, ничего не трогаем
+                        return
+
+                                # Если всё-таки не в чате — мягко возвращаемся к меню после подтемы
                     await update_user_state(user_id, "menu_after_sub")
                     user = await get_user(user_id)
                     await update.message.reply_text(
