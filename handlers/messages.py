@@ -611,31 +611,62 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # 👇 А вот здесь добавляешь обработчик inline-кнопок:
+# 👇 Обработчик inline-кнопок перевода
 # ---------------------------------------------------------
 
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
+from telegram.ext import ContextTypes
 from core.translator import translate_text
+import html
+import logging
 
-import asyncio
+logger = logging.getLogger(__name__)
+
 
 async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = query.data
-    await query.answer()
 
-    if data.startswith("tr|"):
-        _, user_id, msg_id, text = data.split("|", 3)
-
-        async def send_translation():
-            try:
-                translated = await translate_text(text, target_lang)
-                await context.bot.send_message(user_id, text=translated)
-            except Exception as e:
-                logger.exception("Translation failed for user %s: %s", user_id, e)
-                try:
-                    await context.bot.send_message(user_id, text="⚠️ Ошибка перевода, попробуйте позже.")
-                except Exception:
-                    pass
-
-        # запускаем перевод в фоне — не блокирует чат и поиск
-        asyncio.create_task(send_translation())
+    # если по какой-то причине нет callback — просто игнор
+    if not query or not data:
         return
+
+    # обрабатываем только кнопки перевода
+    if not data.startswith("tr|"):
+        await query.answer()
+        return
+
+    try:
+        # формат теперь: tr|src_lang|dst_lang
+        _, src_lang, dst_lang = data.split("|", 2)
+    except ValueError:
+        await query.answer("Ошибка данных кнопки", show_alert=True)
+        return
+
+    text_to_translate = (query.message.text or "").strip()
+    if not text_to_translate:
+        await query.answer("Нет текста для перевода", show_alert=True)
+        return
+
+    # моментальный ответ, чтобы Telegram убрал “часики”
+    await query.answer("Перевожу…")
+
+    try:
+        translated = await translate_text(text_to_translate, src_lang, dst_lang)
+    except Exception as e:
+        logger.exception("Translation failed: %s", e)
+        translated = None
+
+    if not translated:
+        await query.message.reply_text("⚠️ Не удалось перевести, попробуйте позже.")
+        return
+
+    # Отправляем перевод отдельным сообщением, не меняя оригинал
+    escaped_src = html.escape(src_lang)
+    escaped_dst = html.escape(dst_lang)
+    escaped_text = html.escape(translated)
+
+    await query.message.reply_text(
+        f"💬 <b>Перевод ({escaped_src} → {escaped_dst}):</b>\n{escaped_text}",
+        parse_mode="HTML"
+    )
