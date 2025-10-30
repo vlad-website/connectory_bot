@@ -83,4 +83,24 @@ async def translate_text(text: str, source_lang: str, target_lang: str) -> str:
     except Exception as e:
         logger.warning("LibreTranslate failed: %s", e)
 
+        # --- Google Translate Fallback ---
+    try:
+        url = "https://translate.googleapis.com/translate_a/single"
+        params = {
+            "client": "gtx",
+            "sl": source_lang.lower(),
+            "tl": target_lang.lower(),
+            "dt": "t",
+            "q": text,
+        }
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, timeout=10) as resp:
+                result = await resp.json()
+                if isinstance(result, list) and len(result) > 0 and len(result[0]) > 0:
+                    translated = "".join([seg[0] for seg in result[0] if seg[0]])
+                    logger.debug("Google Translate fallback %s→%s OK", source_lang, target_lang)
+                    return translated
+    except Exception as e:
+        logger.warning("Google Translate fallback failed: %s", e)
+
     return "⚠️ Перевод временно недоступен"
