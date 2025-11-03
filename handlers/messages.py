@@ -104,20 +104,38 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # если есть компаньон — пересылаем текст
             if companion_id:
                 try:
+                    from uuid import uuid4
+                    from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+            
                     companion = await get_user(companion_id)
                     lang_from = user.get("lang", "en")
                     lang_to = companion.get("lang", "en")
             
+                    # --- создаём короткий ключ и сохраняем текст в контекст ---
+                    translation_key = str(uuid4())[:8]
+                    context.chat_data[f"tr_{translation_key}"] = text
+            
+                    # --- создаём inline-кнопку, только если языки разные ---
                     reply_markup = None
                     if lang_from != lang_to:
-                        cb_data = f"tr|{lang_from}|{lang_to}|{text[:200]}"
-                        reply_markup = InlineKeyboardMarkup([
-                            [InlineKeyboardButton("🌐 Показать перевод", callback_data=cb_data)]
-                        ])
+                        reply_markup = InlineKeyboardMarkup([[
+                            InlineKeyboardButton(
+                                "🌐 Показать перевод",
+                                callback_data=f"tr|{lang_from}|{lang_to}|{translation_key}"
+                            )
+                        ]])
             
-                    await context.bot.send_message(companion_id, text=text, reply_markup=reply_markup)
+                    # --- отправляем сообщение ---
+                    await context.bot.send_message(
+                        chat_id=companion_id,
+                        text=text,
+                        reply_markup=reply_markup
+                    )
+            
+                    # --- обновляем статистику сообщений ---
                     await increment_messages(user_id)
                     await increment_messages(companion_id)
+            
                 except Exception:
                     logger.exception("Failed to forward chat message from %s to %s", user_id, companion_id)
                 return
@@ -610,24 +628,23 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.exception("Also failed to notify user after handler exception")
 
 
-# 👇 А вот здесь добавляешь обработчик inline-кнопок:
-# 👇 Обработчик inline-кнопок перевода
-# ---------------------------------------------------------
 
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
+
+# 👇 А вот здесь добавляешь обработчик inline-кнопок:
+from telegram import Update
 from telegram.ext import ContextTypes
 from core.translator import translate_text
+import asyncio
 import html
 import logging
 
 logger = logging.getLogger(__name__)
 
-
 async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = query.data
 
-    # если по какой-то причине нет callback — просто игнор
+    # если нет данных — выходим
     if not query or not data:
         return
 
@@ -637,36 +654,46 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
         return
 
     try:
-        # формат теперь: tr|src_lang|dst_lang
-        _, src_lang, dst_lang = data.split("|", 2)
+        # формат теперь: tr|src_lang|dst_lang|uuid
+        _, src_lang, dst_lang, key = data.split("|", 3)
     except ValueError:
         await query.answer("Ошибка данных кнопки", show_alert=True)
         return
 
-    text_to_translate = (query.message.text or "").strip()
+    # достаем сохранённый текст по ключу
+    text_to_translate = context.chat_data.get(f"tr_{key}")
     if not text_to_translate:
-        await query.answer("Нет текста для перевода", show_alert=True)
+        await query.answer("⚠️ Текст больше не доступен.")
         return
 
-    # моментальный ответ, чтобы Telegram убрал “часики”
+    # моментальный ответ
     await query.answer("Перевожу…")
 
-    try:
-        translated = await translate_text(text_to_translate, src_lang, dst_lang)
-    except Exception as e:
-        logger.exception("Translation failed: %s", e)
-        translated = None
+    async def send_translation():
+        try:
+            translated = await translate_text(text_to_translate, src_lang, dst_lang)
+            if not translated:
+                await context.bot.send_message(
+                    chat_id=query.from_user.id,
+                    text="⚠️ Не удалось перевести, попробуйте позже."
+                )
+                return
 
-    if not translated:
-        await query.message.reply_text("⚠️ Не удалось перевести, попробуйте позже.")
-        return
+            escaped_src = html.escape(src_lang)
+            escaped_dst = html.escape(dst_lang)
+            escaped_text = html.escape(translated)
 
-    # Отправляем перевод отдельным сообщением, не меняя оригинал
-    escaped_src = html.escape(src_lang)
-    escaped_dst = html.escape(dst_lang)
-    escaped_text = html.escape(translated)
+            await context.bot.send_message(
+                chat_id=query.from_user.id,
+                text=f"💬 <b>Перевод ({escaped_src} → {escaped_dst}):</b>\n{escaped_text}",
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.exception("Translation failed: %s", e)
+            await context.bot.send_message(
+                chat_id=query.from_user.id,
+                text="⚠️ Ошибка перевода, попробуйте позже."
+            )
 
-    await query.message.reply_text(
-        f"💬 <b>Перевод ({escaped_src} → {escaped_dst}):</b>\n{escaped_text}",
-        parse_mode="HTML"
-    )
+    # запускаем перевод в фоне, чтобы не блокировать Telegram
+    asyncio.create_task(send_translation())
