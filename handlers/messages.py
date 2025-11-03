@@ -23,6 +23,11 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 logger = logging.getLogger(__name__)
 
+# --- Глобальный кэш для текстов перевода ---
+TRANSLATION_CACHE = {}
+
+
+
 # 🔹 Добавляем сюда — новую версию handle_stop_search
 async def handle_stop_search(user_id: int, user: dict, context):
     try:
@@ -113,7 +118,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
                     # --- создаём короткий ключ и сохраняем текст в контекст ---
                     translation_key = str(uuid4())[:8]
-                    context.chat_data[f"tr_{translation_key}"] = text
+                    TRANSLATION_CACHE[translation_key] = text
             
                     # --- создаём inline-кнопку, только если языки разные ---
                     reply_markup = None
@@ -661,7 +666,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
         return
 
     # достаем сохранённый текст по ключу
-    text_to_translate = context.chat_data.get(f"tr_{key}")
+    text_to_translate = TRANSLATION_CACHE.get(key)
     if not text_to_translate:
         await query.answer("⚠️ Текст больше не доступен.")
         return
@@ -672,6 +677,8 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
     async def send_translation():
         try:
             translated = await translate_text(text_to_translate, src_lang, dst_lang)
+            # после успешного перевода
+            TRANSLATION_CACHE.pop(key, None)
             if not translated:
                 await context.bot.send_message(
                     chat_id=query.from_user.id,
