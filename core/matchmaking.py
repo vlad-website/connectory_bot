@@ -132,8 +132,17 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
             markup_other = await kb_chat(other)
 
             # отправляем каждому на его языке
-            await context.bot.send_message(user_id, msg_user, reply_markup=markup_user)
-            await context.bot.send_message(other_id, msg_other, reply_markup=markup_other)
+            await context.bot.send_message(
+            chat_id=user_id,
+            text=msg_user,
+            reply_markup=markup_user,
+        )
+        
+        await context.bot.send_message(
+            chat_id=other_id,
+            text=msg_other,
+            reply_markup=markup_other,
+        )
 
             logger.info(
                 "🎯 MATCH: %s (%s) ↔ %s (%s) | theme=%s sub=%s/%s",
