@@ -2,11 +2,12 @@ import logging
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from handlers.keyboards import kb_after_sub, kb_searching, kb_main_menu, get_topic_keyboard
+from handlers.keyboards import kb_settings, kb_gender_settings, kb_after_sub, kb_chat, kb_searching, kb_main_menu, get_topic_keyboard
+from handlers.keyboards import kb_choose_lang
 from core.i18n import tr
 from db.user_queries import (
     get_user, update_user_nickname, update_user_gender,
-    update_user_theme, update_user_sub, update_user_state,
+    update_user_theme, update_user_lang, update_user_name, update_user_sub, update_user_state,
     increment_messages
 )
 from core.topics import TOPICS
@@ -276,7 +277,18 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     elif action == "stats":
                         await update.message.reply_text(await tr(user, "stats_in_progress"))
                     elif action == "settings":
-                        await update.message.reply_text(await tr(user, "settings_in_progress"))
+                        # Переводим пользователя в состояние settings
+                        await update_user_state(user_id, "settings")
+                    
+                        # Обновляем user после смены состояния
+                        user = await get_user(user_id)
+                    
+                        from handlers.keyboards import kb_settings
+                    
+                        await update.message.reply_text(
+                            await tr(user, "settings_title"),
+                            reply_markup=await kb_settings(user)
+                        )
                     elif action == "suggest":
                         await update_user_state(user_id, "suggest")
                         user = await get_user(user_id)
@@ -433,6 +445,75 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
+
+
+        # --- Настройки профиля ---
+        if state == "settings":
+            # Изменить язык -> уходим в под-состояние и показываем inline-кнопки
+            if text == await tr(user, "btn_change_lang"):
+                await update_user_state(user_id, "settings_lang")
+                await update.message.reply_text(await tr(user, "pick_language"), reply_markup=kb_choose_lang())
+                return
+        
+            # Изменить ник -> ждём следующий текст
+            if text == await tr(user, "btn_change_name"):
+                await update_user_state(user_id, "settings_name")
+                await update.message.reply_text(await tr(user, "ask_new_name"))
+                return
+        
+            # Изменить пол -> показываем клавиатуру полов
+            if text == await tr(user, "btn_change_gender"):
+                await update_user_state(user_id, "settings_gender")
+                await update.message.reply_text(
+                    await tr(user, "btn_change_gender"),
+                    reply_markup=await kb_gender_settings(user)
+                )
+                return
+        
+            # Назад/Главное меню из настроек
+            if text in (await tr(user, "btn_main_menu"), await tr(user, "settings_back")):
+                await update_user_state(user_id, "menu")
+                user = await get_user(user_id)
+                await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+                return
+
+        # --- Ввод нового ника ---
+        if state == "settings_name":
+            new_name = (text or "").strip()[:30]
+            if not new_name:
+                await update.message.reply_text(await tr(user, "ask_new_name"))
+                return
+            await update_user_name(user_id, new_name)
+            await update_user_state(user_id, "menu")
+            user = await get_user(user_id)
+            await update.message.reply_text(await tr(user, "name_changed"), reply_markup=await kb_main_menu(user))
+            return
+
+        # --- Выбор пола ---
+        if state == "settings_gender":
+            # Сопоставим ввод с ключами
+            if text == await tr(user, "gender_male"):
+                gender_value = "male"
+            elif text == await tr(user, "gender_female"):
+                gender_value = "female"
+            elif text == await tr(user, "gender_other"):
+                gender_value = "other"
+            elif text == await tr(user, "settings_back"):
+                await update_user_state(user_id, "settings")
+                await update.message.reply_text(await tr(user, "settings_title"), reply_markup=await kb_settings(user))
+                return
+            else:
+                # Нажал что-то левое — повторим клавиатуру
+                await update.message.reply_text(await tr(user, "btn_change_gender"), reply_markup=await kb_gender_settings(user))
+                return
+        
+            await update_user_gender(user_id, gender_value)
+            await update_user_state(user_id, "menu")
+            user = await get_user(user_id)
+            await update.message.reply_text(await tr(user, "gender_changed"), reply_markup=await kb_main_menu(user))
+            return
+
+        
         # --- Меню после подтемы ---
         if state == "menu_after_sub":
             if text == await tr(user, "btn_search"):
@@ -651,6 +732,34 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
 
     # если нет данных — выходим
     if not query or not data:
+        return
+
+    # Выбор языка из настроек: callback_data = "lang_ru", "lang_en", ...
+    if data.startswith("lang_"):
+        new_lang = data.split("_", 1)[1]
+        user_id = update.effective_user.id
+    
+        try:
+            await update_user_lang(user_id, new_lang)
+        except Exception as e:
+            logger.exception("Failed to update lang for %s: %s", user_id, e)
+            await update.callback_query.answer("Ошибка смены языка", show_alert=True)
+            return
+    
+        # Обновим состояние на menu, покажем подтверждение и главное меню
+        await update_user_state(user_id, "menu")
+        user = await get_user(user_id)
+        await update.callback_query.answer(await tr(user, "lang_changed"))
+        # Уберём inline-кнопки у старого сообщения (по желанию)
+        try:
+            await update.callback_query.edit_message_reply_markup(reply_markup=None)
+        except Exception:
+            pass
+    
+        await update.callback_query.message.reply_text(
+            await tr(user, "settings_done"),
+            reply_markup=await kb_main_menu(user)
+        )
         return
 
     # обрабатываем только кнопки перевода
