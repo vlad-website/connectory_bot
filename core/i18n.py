@@ -76,6 +76,7 @@ TEXTS = {
         "gender_male": "Мужской",
         "gender_female": "Женский",
         "gender_any": "Не важно",
+		"gender_other": "Не важно",
 
         # Вывод
         "confirm_theme": "Вы выбрали тему: {theme}",
@@ -278,6 +279,7 @@ TEXTS = {
         "gender_male": "Чоловіча",
         "gender_female": "Жіноча",
         "gender_any": "Неважливо",
+		"gender_other": "Неважливо",
 
         "confirm_theme": "Ви обрали тему: {theme}",
         "confirm_sub": "Та підтему: {sub}",
@@ -479,6 +481,7 @@ TEXTS = {
         "gender_male": "Male",
         "gender_female": "Female",
         "gender_any": "Doesn't matter",
+		"gender_other": "Doesn't matter",
 
         "confirm_theme": "You selected the topic: {theme}",
         "confirm_sub": "And the subtopic: {sub}",
@@ -681,6 +684,7 @@ TEXTS = {
         "gender_male": "Masculino",
         "gender_female": "Femenino",
         "gender_any": "No importa",
+		"gender_other": "No importa",
 
         "confirm_theme": "Has elegido el tema: {theme}",
         "confirm_sub": "Y el subtema: {sub}",
@@ -882,6 +886,7 @@ TEXTS = {
         "gender_male": "Homme",
         "gender_female": "Femme",
         "gender_any": "Peu importe",
+		"gender_other": "Peu importe",
 
         "confirm_theme": "Vous avez choisi le thème : {theme}",
         "confirm_sub": "Et le sous-thème : {sub}",
@@ -1085,6 +1090,7 @@ TEXTS = {
         "gender_male": "Männlich",
         "gender_female": "Weiblich",
         "gender_any": "Egal",
+		"gender_other": "Egal",
 
         "confirm_theme": "Du hast das Thema gewählt: {theme}",
         "confirm_sub": "Und das Unterthema: {sub}",
