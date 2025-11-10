@@ -92,3 +92,26 @@ async def kb_main_menu(user):
         pass
 
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+
+async def kb_settings(user):
+    return ReplyKeyboardMarkup(
+        [
+            [await tr(user, "btn_change_lang")],
+            [await tr(user, "btn_change_name")],
+            [await tr(user, "btn_change_gender")],
+            [await tr(user, "btn_main_menu")],
+        ],
+        resize_keyboard=True
+    )
+
+async def kb_gender_settings(user):
+    return ReplyKeyboardMarkup(
+        [
+            [await tr(user, "gender_male")],
+            [await tr(user, "gender_female")],
+            [await tr(user, "gender_other")],
+            [await tr(user, "settings_back")],
+        ],
+        resize_keyboard=True
+    )
+
