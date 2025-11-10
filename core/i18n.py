@@ -24,6 +24,18 @@ TEXTS = {
 		"searching_retry": "🔍 Всё ещё ищем собеседника... Если поиск затянулся, попробуйте снова.",
 
 
+		  "settings_title": "⚙️ Настройки профиля",
+		  "btn_change_lang": "🌐 Изменить язык",
+		  "btn_change_name": "📝 Изменить ник",
+		  "btn_change_gender": "🚻 Изменить пол",
+		  "ask_new_name": "📝 Введите новый ник (до 30 символов):",
+		  "name_changed": "✅ Ник обновлён!",
+		  "lang_changed": "✅ Язык обновлён!",
+		  "gender_changed": "✅ Пол обновлён!",
+		  "settings_done": "Изменения сохранены.",
+		  "btn_main_menu": "🏠 Главное меню",
+		  "settings_back": "⬅️ Назад",
+
 		"search_stop": "❌ Поиск остановлен.",
 
 		# Главное меню
@@ -219,6 +231,20 @@ TEXTS = {
 		"search_stop": "❌ Пошук зупинено.",
 		"searching_retry": "🔍 Все ще шукаємо співрозмовника... Якщо пошук триває занадто довго, спробуйте ще раз.",
 
+		"settings_title": "⚙️ Налаштування профілю",
+		"btn_change_lang": "🌐 Змінити мову",
+		"btn_change_name": "📝 Змінити нік",
+		"btn_change_gender": "🚻 Змінити стать",
+		"ask_new_name": "📝 Введіть новий нік (до 30 символів):",
+		"name_changed": "✅ Нік оновлено!",
+		"lang_changed": "✅ Мову змінено!",
+		"gender_changed": "✅ Стать змінено!",
+		"settings_done": "Зміни збережено.",
+		"btn_main_menu": "🏠 Головне меню",
+		"settings_back": "⬅️ Назад",
+		
+
+		
         "btn_start": "Почати",
         "btn_search": "🔍 Почати пошук",
         "btn_stop": "⛔ Зупинити пошук",
@@ -406,6 +432,19 @@ TEXTS = {
 		"search_stop": "❌ Search stopped.",
 		"searching_retry": "🔍 Still searching for a partner... If it takes too long, try again.",
 
+
+		  "settings_title": "⚙️ Profile settings",
+		  "btn_change_lang": "🌐 Change language",
+		  "btn_change_name": "📝 Change nickname",
+		  "btn_change_gender": "🚻 Change gender",
+		  "ask_new_name": "📝 Enter a new nickname (up to 30 chars):",
+		  "name_changed": "✅ Nickname updated!",
+		  "lang_changed": "✅ Language updated!",
+		  "gender_changed": "✅ Gender updated!",
+		  "settings_done": "Changes saved.",
+		  "btn_main_menu": "🏠 Main menu",
+		  "settings_back": "⬅️ Back",
+		
         "btn_start": "Start",
         "btn_search": "🔍 Start search",
         "btn_stop": "⛔ Stop search",
@@ -594,6 +633,20 @@ TEXTS = {
 		"search_stop": "❌ Búsqueda detenida.",
 		"searching_retry": "🔍 Todavía buscando un compañero... Si tarda demasiado, inténtalo de nuevo.",
 
+		"settings_title": "⚙️ Configuración del perfil",
+		"btn_change_lang": "🌐 Cambiar idioma",
+		"btn_change_name": "📝 Cambiar apodo",
+		"btn_change_gender": "🚻 Cambiar género",
+		"ask_new_name": "📝 Introduce un nuevo apodo (hasta 30 caracteres):",
+		"name_changed": "✅ Apodo actualizado.",
+		"lang_changed": "✅ Idioma actualizado.",
+		"gender_changed": "✅ Género actualizado.",
+		"settings_done": "Cambios guardados.",
+		"btn_main_menu": "🏠 Menú principal",
+		"settings_back": "⬅️ Atrás",
+
+
+		
         "btn_start": "Comenzar",
         "btn_search": "🔍 Buscar",
         "btn_stop": "⛔ Detener búsqueda",
@@ -782,6 +835,20 @@ TEXTS = {
 		"search_stopped": "❌ Recherche arrêtée.",
 		"searching_retry": "🔍 Recherche en cours... Si cela prend trop de temps, réessayez.",
 
+		"settings_title": "⚙️ Paramètres du profil",
+		"btn_change_lang": "🌐 Changer la langue",
+		"btn_change_name": "📝 Modifier le pseudo",
+		"btn_change_gender": "🚻 Modifier le genre",
+		"ask_new_name": "📝 Entrez un nouveau pseudo (jusqu’à 30 caractères) :",
+		"name_changed": "✅ Pseudo mis à jour !",
+		"lang_changed": "✅ Langue modifiée !",
+		"gender_changed": "✅ Genre mis à jour !",
+		"settings_done": "Modifications enregistrées.",
+		"btn_main_menu": "🏠 Menu principal",
+		"settings_back": "⬅️ Retour",
+
+
+		
         "btn_start": "Commencer",
         "btn_search": "🔍 Lancer la recherche",
         "btn_stop": "⛔ Arrêter la recherche",
@@ -968,6 +1035,22 @@ TEXTS = {
 		"search_stop": "❌ Suche gestoppt.",
 		"searching_retry": "🔍 Suche läuft noch... Wenn es zu lange dauert, versuchen Sie es erneut.",
 
+		"settings_title": "⚙️ Profileinstellungen",
+		"btn_change_lang": "🌐 Sprache ändern",
+		"btn_change_name": "📝 Spitznamen ändern",
+		"btn_change_gender": "🚻 Geschlecht ändern",
+		"ask_new_name": "📝 Neuen Spitznamen eingeben (bis zu 30 Zeichen):",
+		"name_changed": "✅ Spitzname aktualisiert!",
+		"lang_changed": "✅ Sprache aktualisiert!",
+		"gender_changed": "✅ Geschlecht aktualisiert!",
+		"settings_done": "Änderungen gespeichert.",
+		"btn_main_menu": "🏠 Hauptmenü",
+		"settings_back": "⬅️ Zurück",
+		
+
+
+
+		
         "btn_start": "Start",
         "btn_search": "🔍 Suche starten",
         "btn_stop": "⛔ Suche stoppen",
