@@ -131,20 +131,3 @@ async def increment_messages(user_id: int, count: int = 1):
         logger.exception("Failed to increment messages for user %s", user_id)
 
 
-
-# Языки, ник, пол — простые апдейты
-async def update_user_lang(user_id: int, lang: str):
-    # пример для asyncpg
-    from db.db import db
-    await db.execute("UPDATE users SET lang = $1 WHERE id = $2::BIGINT", lang, user_id)
-    logger.debug("update_user_lang %s → %s", user_id, lang)
-
-async def update_user_name(user_id: int, name: str):
-    from db.db import db
-    await db.execute("UPDATE users SET nickname = $1 WHERE id = $2::BIGINT", name, user_id)
-    logger.debug("update_user_name %s → %s", user_id, name)
-
-async def update_user_gender(user_id: int, gender: str):
-    from db.db import db
-    await db.execute("UPDATE users SET gender = $1 WHERE id = $2::BIGINT", gender, user_id)
-    logger.debug("update_user_gender %s → %s", user_id, gender)
