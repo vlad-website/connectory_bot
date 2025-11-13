@@ -7,7 +7,7 @@ from handlers.keyboards import kb_choose_lang
 from core.i18n import tr
 from db.user_queries import (
     get_user, update_user_nickname, update_user_gender,
-    update_user_theme, update_user_lang, update_user_name, update_user_sub, update_user_state,
+    update_user_theme, update_user_lang, update_user_sub, update_user_state,
     increment_messages
 )
 from core.topics import TOPICS
