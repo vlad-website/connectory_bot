@@ -483,7 +483,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if not new_name:
                 await update.message.reply_text(await tr(user, "ask_new_name"))
                 return
-            await update_user_name(user_id, new_name)
+            await update_user_nickname(user_id, new_name)
             await update_user_state(user_id, "menu")
             user = await get_user(user_id)
             await update.message.reply_text(await tr(user, "name_changed"), reply_markup=await kb_main_menu(user))
