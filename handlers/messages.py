@@ -477,6 +477,13 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
                 return
 
+        # --- Смена языка (ждём callback от inline-кнопок) ---
+        if state == "settings_lang":
+            # пользователь нажал обычную клавиатуру или что-то прислал
+            # мы НИКОГДА не принимаем текст, только callback "setlang_xx"
+            await update.message.reply_text(await tr(user, "pick_language"), reply_markup=kb_settings_lang())
+            return
+
         # --- Ввод нового ника ---
         if state == "settings_name":
             new_name = (text or "").strip()[:30]
