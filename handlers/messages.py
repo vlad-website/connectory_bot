@@ -452,7 +452,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Изменить язык -> уходим в под-состояние и показываем inline-кнопки
             if text == await tr(user, "btn_change_lang"):
                 await update_user_state(user_id, "settings_lang")
-                await update.message.reply_text(await tr(user, "pick_language"), reply_markup=kb_choose_lang())
+                await update.message.reply_text(await tr(user, "pick_language"), reply_markup=kb_settings_lang())
                 return
         
             # Изменить ник -> ждём следующий текст
@@ -735,32 +735,36 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
         return
 
     # Выбор языка из настроек: callback_data = "lang_ru", "lang_en", ...
-    if data.startswith("lang_"):
+    # --- смена языка в настройках ---
+    if data.startswith("setlang_"):
         lang = data.split("_")[1]
         user_id = query.from_user.id
-
-        # обновляем язык пользователя
+    
         await update_user_lang(user_id, lang)
         user = await get_user(user_id)
-
-        # возвращаем его в меню настроек (если был в настройках)
-        if user and user.get("state") == "change_lang":
-            await update_user_state(user_id, "settings")
-            markup = await kb_settings(user)
-            msg = tr_lang(lang, "lang_changed")
-        else:
-            # на случай, если вдруг state не settings — просто отправляем в главное меню
-            await update_user_state(user_id, "menu")
-            markup = await kb_main_menu(user)
-            msg = tr_lang(lang, "lang_changed")
-
-        # редактируем старое сообщение, убираем кнопки выбора языка
+    
+        # возвращаем состояние обратно в настройки
+        await update_user_state(user_id, "settings")
+    
+        # редактируем старое сообщение
         try:
-            await query.message.edit_text(msg, reply_markup=markup)
+            await query.message.edit_text(
+                tr_lang(lang, "lang_changed")
+            )
         except Exception:
-            await context.bot.send_message(user_id, msg, reply_markup=markup)
-
-        await query.answer("✅ Language updated!")
+            await context.bot.send_message(
+                user_id, tr_lang(lang, "lang_changed")
+            )
+    
+        # показываем обратно меню настроек
+        from handlers.keyboards import kb_settings
+        await context.bot.send_message(
+            chat_id=user_id,
+            text=await tr(user, "settings_title"),
+            reply_markup=await kb_settings(user)
+        )
+    
+        await query.answer()
         return
 
     # обрабатываем только кнопки перевода
