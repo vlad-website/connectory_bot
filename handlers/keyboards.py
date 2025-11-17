@@ -16,6 +16,16 @@ def kb_choose_lang():
         [InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
     ])
 
+def kb_settings_lang() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🇷🇺 Русский",   callback_data="setlang_ru")],
+        [InlineKeyboardButton("🇺🇸 English",   callback_data="setlang_en")],
+        [InlineKeyboardButton("🇪🇸 Español",   callback_data="setlang_es")],
+        [InlineKeyboardButton("🇫🇷 Français",  callback_data="setlang_fr")],
+        [InlineKeyboardButton("🇩🇪 Deutsch",   callback_data="setlang_de")],
+        [InlineKeyboardButton("🇺🇦 Українська", callback_data="setlang_uk")],
+    ])
+
 
 # 🔹 Выбор темы
 async def get_topic_keyboard(user):
