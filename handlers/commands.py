@@ -57,12 +57,41 @@ async def choose_lang(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = query.data.split("_")[1]
     user_id = query.from_user.id
 
-    # Создаём пользователя и выставляем state
-    await create_user(user_id, lang)
-    await update_user_lang(user_id, lang)
-    await update_user_state(user_id, "nickname")
+    user = await get_user(user_id)
 
-    await query.edit_message_text(tr_lang(lang, "enter_nick"))
+    # --- Новый пользователь (нет записи) ---
+    if not user:
+        await create_user(user_id, lang)
+        await update_user_lang(user_id, lang)
+        await update_user_state(user_id, "nickname")
+        await query.edit_message_text(tr_lang(lang, "enter_nick"))
+        return
+
+    # --- Пользователь зарегистрирован — меняет язык только в настройках ---
+    if user.get("state") in ["settings", "settings_lang"]:
+        await update_user_lang(user_id, lang)
+        await update_user_state(user_id, "settings")
+
+        from handlers.keyboards import kb_settings
+        await query.edit_message_text(tr_lang(lang, "lang_changed"))
+        await context.bot.send_message(
+            chat_id=user_id,
+            text=tr_lang(lang, "settings_title"),
+            reply_markup=await kb_settings(user)
+        )
+        return
+
+    # --- Если просто нажал кнопку языка вне настроек (редкая ситуация) ---
+    await update_user_lang(user_id, lang)
+    await update_user_state(user_id, "menu")
+
+    user = await get_user(user_id)
+    await query.edit_message_text(tr_lang(lang, "main_menu"))
+    await context.bot.send_message(
+        chat_id=user_id,
+        text=tr_lang(lang, "main_menu"),
+        reply_markup=await kb_main_menu(user)
+    )
 
 def register_handlers(app):
     # Сначала команды
