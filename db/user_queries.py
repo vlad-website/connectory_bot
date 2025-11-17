@@ -22,15 +22,15 @@ async def get_user(user_id: int) -> dict | None:
         return dict(row) if row else None
 
 async def create_user(user_id: int, lang: str = 'ru', nickname: str | None = None):
-    """
-    Создаём нового пользователя. Добавляем дату регистрации и счётчик сообщений.
-    """
+    user = await get_user(user_id)
+    if user:
+        logger.debug("create_user: user %s already exists, skipping", user_id)
+        return
     try:
         status = await _exec(
             """
             INSERT INTO users (id, state, lang, nickname, registered_at, messages_sent)
             VALUES ($1::BIGINT, 'nickname', $2, $3, $4, 0)
-            ON CONFLICT (id) DO NOTHING
             """,
             user_id, lang, nickname, datetime.utcnow()
         )
