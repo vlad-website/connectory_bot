@@ -16,13 +16,14 @@ def kb_choose_lang():
         [InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
     ])
 
+
 def kb_settings_lang() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🇷🇺 Русский",   callback_data="setlang_ru")],
-        [InlineKeyboardButton("🇺🇸 English",   callback_data="setlang_en")],
-        [InlineKeyboardButton("🇪🇸 Español",   callback_data="setlang_es")],
-        [InlineKeyboardButton("🇫🇷 Français",  callback_data="setlang_fr")],
-        [InlineKeyboardButton("🇩🇪 Deutsch",   callback_data="setlang_de")],
+        [InlineKeyboardButton("🇷🇺 Русский", callback_data="setlang_ru")],
+        [InlineKeyboardButton("🇺🇸 English", callback_data="setlang_en")],
+        [InlineKeyboardButton("🇪🇸 Español", callback_data="setlang_es")],
+        [InlineKeyboardButton("🇫🇷 Français", callback_data="setlang_fr")],
+        [InlineKeyboardButton("🇩🇪 Deutsch", callback_data="setlang_de")],
         [InlineKeyboardButton("🇺🇦 Українська", callback_data="setlang_uk")],
     ])
 
@@ -34,28 +35,27 @@ async def get_topic_keyboard(user):
         label = await tr(user, topic_key)
         keyboard.append([KeyboardButton(label)])
 
-    # Кнопка "Главное меню"
     keyboard.append([KeyboardButton(await tr(user, "btn_main_menu"))])
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 
-# 🔹 После выбора подтемы (меню перед поиском)
+# 🔹 После выбора подтемы
 async def kb_after_sub(user):
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton(await tr(user, "btn_search"))],  # 🔍 Начать поиск
+            [KeyboardButton(await tr(user, "btn_search"))],
             [
                 KeyboardButton(await tr(user, "btn_change_theme")),
                 KeyboardButton(await tr(user, "btn_change_sub")),
             ],
-            [KeyboardButton(await tr(user, "btn_main_menu"))],  # 🏠 Главное меню
-            [KeyboardButton(await tr(user, "btn_support"))],    # ❤️ Поддержать проект
+            [KeyboardButton(await tr(user, "btn_main_menu"))],
+            [KeyboardButton(await tr(user, "btn_support"))],
         ],
         resize_keyboard=True
     )
 
 
-# 🔹 Во время поиска собеседника
+# 🔹 Во время поиска
 async def kb_searching(user):
     return ReplyKeyboardMarkup(
         [
@@ -68,7 +68,7 @@ async def kb_searching(user):
     )
 
 
-# 🔹 Во время активного чата
+# 🔹 Во время чата
 async def kb_chat(user):
     return ReplyKeyboardMarkup(
         [
@@ -94,34 +94,36 @@ async def kb_main_menu(user):
         [KeyboardButton(await tr(user, "btn_donate"))],
     ]
 
-    # Если админ — добавить пункт статистики
     try:
         if int(user.get("id", 0)) in ADMIN_IDS:
             buttons.append([KeyboardButton("📊 Админ статистика")])
-    except Exception:
+    except:
         pass
 
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
+
+# 🔹 Настройки
 async def kb_settings(user):
     return ReplyKeyboardMarkup(
         [
-            [await tr(user, "btn_change_lang")],
-            [await tr(user, "btn_change_name")],
-            [await tr(user, "btn_change_gender")],
-            [await tr(user, "btn_main_menu")],
+            [KeyboardButton(await tr(user, "btn_change_lang"))],
+            [KeyboardButton(await tr(user, "btn_change_name"))],
+            [KeyboardButton(await tr(user, "btn_change_gender"))],
+            [KeyboardButton(await tr(user, "btn_main_menu"))],
         ],
         resize_keyboard=True
     )
 
+
+# 🔹 Выбор пола
 async def kb_gender_settings(user):
     return ReplyKeyboardMarkup(
         [
-            [await tr(user, "gender_male")],
-            [await tr(user, "gender_female")],
-            [await tr(user, "gender_other")],
-            [await tr(user, "settings_back")],
+            [KeyboardButton(await tr(user, "gender_male"))],
+            [KeyboardButton(await tr(user, "gender_female"))],
+            [KeyboardButton(await tr(user, "gender_other"))],
+            [KeyboardButton(await tr(user, "settings_back"))],
         ],
         resize_keyboard=True
     )
-
