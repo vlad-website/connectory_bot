@@ -448,57 +448,70 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
         # --- Настройки профиля ---
+        # --- Настройки профиля ---
         if state == "settings":
-            # Изменить язык -> уходим в под-состояние и показываем inline-кнопки
+        
+            # Изменить язык — ждём inline-кнопки
             if text == await tr(user, "btn_change_lang"):
                 await update_user_state(user_id, "settings_lang")
-                await update.message.reply_text(await tr(user, "pick_language"), reply_markup=kb_settings_lang())
+                await update.message.reply_text(
+                    await tr(user, "choose_lang"),
+                    reply_markup=kb_settings_lang()
+                )
                 return
         
-            # Изменить ник -> ждём следующий текст
+            # Изменить ник
             if text == await tr(user, "btn_change_name"):
                 await update_user_state(user_id, "settings_name")
                 await update.message.reply_text(await tr(user, "ask_new_name"))
                 return
         
-            # Изменить пол -> показываем клавиатуру полов
+            # Изменить пол
             if text == await tr(user, "btn_change_gender"):
                 await update_user_state(user_id, "settings_gender")
                 await update.message.reply_text(
-                    await tr(user, "btn_change_gender"),
+                    await tr(user, "choose_gender"),
                     reply_markup=await kb_gender_settings(user)
                 )
                 return
         
-            # Назад/Главное меню из настроек
+            # Назад
             if text in (await tr(user, "btn_main_menu"), await tr(user, "settings_back")):
                 await update_user_state(user_id, "menu")
                 user = await get_user(user_id)
-                await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+                await update.message.reply_text(
+                    await tr(user, "main_menu"),
+                    reply_markup=await kb_main_menu(user)
+                )
                 return
-
-        # --- Смена языка (ждём callback от inline-кнопок) ---
+        
+        # --- Выбор языка в настройках ---
         if state == "settings_lang":
-            # пользователь нажал обычную клавиатуру или что-то прислал
-            # мы НИКОГДА не принимаем текст, только callback "setlang_xx"
-            await update.message.reply_text(await tr(user, "pick_language"), reply_markup=kb_settings_lang())
+            # если user написал текст, а не нажал inline-кнопку
+            await update.message.reply_text(
+                await tr(user, "choose_lang"),
+                reply_markup=kb_settings_lang()
+            )
             return
-
+        
         # --- Ввод нового ника ---
         if state == "settings_name":
-            new_name = (text or "").strip()[:30]
+            new_name = text.strip()[:30]
             if not new_name:
                 await update.message.reply_text(await tr(user, "ask_new_name"))
                 return
+        
             await update_user_nickname(user_id, new_name)
             await update_user_state(user_id, "menu")
             user = await get_user(user_id)
-            await update.message.reply_text(await tr(user, "name_changed"), reply_markup=await kb_main_menu(user))
+            await update.message.reply_text(
+                await tr(user, "name_changed"),
+                reply_markup=await kb_main_menu(user)
+            )
             return
-
-        # --- Выбор пола ---
+        
+        # --- Смена пола ---
         if state == "settings_gender":
-            # Сопоставим ввод с ключами
             if text == await tr(user, "gender_male"):
                 gender_value = "male"
             elif text == await tr(user, "gender_female"):
@@ -507,19 +520,26 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 gender_value = "other"
             elif text == await tr(user, "settings_back"):
                 await update_user_state(user_id, "settings")
-                await update.message.reply_text(await tr(user, "settings_title"), reply_markup=await kb_settings(user))
+                await update.message.reply_text(
+                    await tr(user, "settings_title"),
+                    reply_markup=await kb_settings(user)
+                )
                 return
             else:
-                # Нажал что-то левое — повторим клавиатуру
-                await update.message.reply_text(await tr(user, "btn_change_gender"), reply_markup=await kb_gender_settings(user))
+                await update.message.reply_text(
+                    await tr(user, "choose_gender"),
+                    reply_markup=await kb_gender_settings(user)
+                )
                 return
         
             await update_user_gender(user_id, gender_value)
             await update_user_state(user_id, "menu")
             user = await get_user(user_id)
-            await update.message.reply_text(await tr(user, "gender_changed"), reply_markup=await kb_main_menu(user))
+            await update.message.reply_text(
+                await tr(user, "gender_changed"),
+                reply_markup=await kb_main_menu(user)
+            )
             return
-
         
         # --- Меню после подтемы ---
         if state == "menu_after_sub":
