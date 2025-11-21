@@ -3,7 +3,7 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from handlers.keyboards import kb_settings, kb_gender_settings, kb_after_sub, kb_chat, kb_searching, kb_main_menu, get_topic_keyboard
-from handlers.keyboards import kb_choose_lang
+from handlers.keyboards import kb_choose_lang, kb_settings_lang
 from core.i18n import tr
 from db.user_queries import (
     get_user, update_user_nickname, update_user_gender,
