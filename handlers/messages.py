@@ -771,23 +771,23 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
         await update_user_lang(user_id, lang)
         user = await get_user(user_id)
     
-        # вернуться в настройки
-        await update_user_state(user_id, "settings")
+        # возвращаем в главное меню (а не в настройки)
+        await update_user_state(user_id, "menu")
     
-        # отвечаем юзеру (правильным переводом)
-        msg = await tr({"lang": lang}, "lang_changed")  # <--- правильный вызов
+        # сообщение об успешном изменении языка
+        msg = await tr({"lang": lang}, "lang_changed")
     
         try:
             await query.message.edit_text(msg)
         except:
             await context.bot.send_message(user_id, msg)
     
-        # заново показываем меню настроек
-        from handlers.keyboards import kb_settings
+        # показать главное меню
+        from handlers.keyboards import kb_main_menu
         await context.bot.send_message(
             chat_id=user_id,
-            text=await tr(user, "settings_title"),
-            reply_markup=await kb_settings(user)
+            text=await tr(user, "main_menu"),
+            reply_markup=await kb_main_menu(user)
         )
     
         await query.answer()
