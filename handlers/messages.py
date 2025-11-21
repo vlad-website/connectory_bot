@@ -764,35 +764,34 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
     # Выбор языка из настроек: callback_data = "lang_ru", "lang_en", ...
     # --- смена языка в настройках ---
     if data.startswith("setlang_"):
-        lang = data.split("_")[1]
-        user_id = query.from_user.id
-    
-        await update_user_lang(user_id, lang)
-        user = await get_user(user_id)
-    
-        # возвращаем состояние обратно в настройки
-        await update_user_state(user_id, "settings")
-    
-        # редактируем старое сообщение
-        try:
-            await query.message.edit_text(
-                tr_lang(lang, "lang_changed")
-            )
-        except Exception:
-            await context.bot.send_message(
-                user_id, tr_lang(lang, "lang_changed")
-            )
-    
-        # показываем обратно меню настроек
-        from handlers.keyboards import kb_settings
-        await context.bot.send_message(
-            chat_id=user_id,
-            text=await tr(user, "settings_title"),
-            reply_markup=await kb_settings(user)
-        )
-    
-        await query.answer()
-        return
+    lang = data.split("_")[1]
+    user_id = query.from_user.id
+
+    # обновляем язык
+    await update_user_lang(user_id, lang)
+    user = await get_user(user_id)
+
+    # вернуться в настройки
+    await update_user_state(user_id, "settings")
+
+    # отвечаем юзеру (правильным переводом)
+    msg = await tr({"lang": lang}, "lang_changed")  # <--- правильный вызов
+
+    try:
+        await query.message.edit_text(msg)
+    except:
+        await context.bot.send_message(user_id, msg)
+
+    # заново показываем меню настроек
+    from handlers.keyboards import kb_settings
+    await context.bot.send_message(
+        chat_id=user_id,
+        text=await tr(user, "settings_title"),
+        reply_markup=await kb_settings(user)
+    )
+
+    await query.answer()
+    return
 
     # обрабатываем только кнопки перевода
     if not data.startswith("tr|"):
