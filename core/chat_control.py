@@ -6,7 +6,6 @@ from db.user_queries import (
     get_user,
     update_user_state,
     update_user_companion,
-    clear_chat_started,
 )
 from handlers.keyboards import kb_after_sub
 
