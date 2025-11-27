@@ -12,6 +12,10 @@ from db.user_queries import (
 from handlers.keyboards import kb_chat
 from core.i18n import tr_lang
 
+from db.user_queries import set_chat_started, add_chat_minutes
+from datetime import datetime
+
+
 logger = logging.getLogger(__name__)
 
 # Читабельные названия языков для текста "собеседник найден"
@@ -106,6 +110,9 @@ async def add_to_queue(user_id: int, theme: str, sub: str, context):
         # Ставим обоим state=chatting и запоминаем companion
         await update_user_state(user_id, "chatting")
         await update_user_state(other_id, "chatting")
+        now = datetime.utcnow()
+        await set_chat_started(user_id, now)
+        await set_chat_started(other_id, now)
         await update_user_companion(user_id, other_id)
         await update_user_companion(other_id, user_id)
 
