@@ -1,17 +1,18 @@
-def get_rank(minutes: int) -> str:
-    if minutes >= 480:
-        return "rank_legend"
-    elif minutes >= 240:
-        return "rank_elite"
-    elif minutes >= 120:
-        return "rank_master"
-    elif minutes >= 60:
-        return "rank_pro"
-    elif minutes >= 30:
-        return "rank_talker"
-    elif minutes >= 15:
-        return "rank_active"
-    elif minutes >= 5:
-        return "rank_chatter"
-    else:
+def get_rank_by_minutes(minutes: int) -> str:
+    if minutes < 10:
         return "rank_newbie"
+    if minutes < 30:
+        return "rank_talker"
+    if minutes < 60:
+        return "rank_chatter"
+    if minutes < 120:
+        return "rank_speaker"
+    if minutes < 300:
+        return "rank_communicator"
+    if minutes < 600:
+        return "rank_socializer"
+    if minutes < 1200:
+        return "rank_connector"
+    if minutes < 2000:
+        return "rank_conversationalist"
+    return "rank_master"
