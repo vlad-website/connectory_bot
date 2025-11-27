@@ -82,6 +82,16 @@ TEXTS = {
         "confirm_theme": "Вы выбрали тему: {theme}",
         "confirm_sub": "И подтему: {sub}",
 
+		"rank_newbie": "Новичок",
+		"rank_talker": "Собеседник",
+		"rank_chatter": "Болтун",
+		"rank_speaker": "Спикер",
+		"rank_communicator": "Коммуникатор",
+		"rank_socializer": "Социализатор",
+		"rank_connector": "Коннектор",
+		"rank_conversationalist": "Диалогист",
+		"rank_master": "Мастер общения",
+
 	# список тем подтем
 	"it": "💻 ІТ",
     	"programming": "👨‍💻 Программирование",
@@ -284,6 +294,16 @@ TEXTS = {
         "confirm_theme": "Ви обрали тему: {theme}",
         "confirm_sub": "Та підтему: {sub}",
 
+		"rank_newbie": "Новачок",
+		"rank_talker": "Співрозмовник",
+		"rank_chatter": "Балакун",
+		"rank_speaker": "Спікер",
+		"rank_communicator": "Комунікатор",
+		"rank_socializer": "Соціалізатор",
+		"rank_connector": "Конектор",
+		"rank_conversationalist": "Діалогіст",
+		"rank_master": "Майстер спілкування",
+
         "it": "💻 ІТ",
     	"programming": "👨‍💻 Програмування",
     	"design": "🎨 Дизайн",
@@ -485,6 +505,16 @@ TEXTS = {
 
         "confirm_theme": "You selected the topic: {theme}",
         "confirm_sub": "And the subtopic: {sub}",
+
+		"rank_newbie": "Newbie",
+		"rank_talker": "Talker",
+		"rank_chatter": "Chatter",
+		"rank_speaker": "Speaker",
+		"rank_communicator": "Communicator",
+		"rank_socializer": "Socializer",
+		"rank_connector": "Connector",
+		"rank_conversationalist": "Conversationalist",
+		"rank_master": "Master of Conversation",
 
         "it": "💻 IT",
         "programming": "👨‍💻 Programming",
@@ -689,6 +719,16 @@ TEXTS = {
         "confirm_theme": "Has elegido el tema: {theme}",
         "confirm_sub": "Y el subtema: {sub}",
 
+		"rank_newbie": "Novato",
+		"rank_talker": "Conversador",
+		"rank_chatter": "Charlatán",
+		"rank_speaker": "Orador",
+		"rank_communicator": "Comunicador",
+		"rank_socializer": "Socializador",
+		"rank_connector": "Conector",
+		"rank_conversationalist": "Conversacionalista",
+		"rank_master": "Maestro de la conversación",
+
         "it": "💻 TI",
     	"programming": "👨‍💻 Programación",
     	"design": "🎨 Diseño",
@@ -890,6 +930,16 @@ TEXTS = {
 
         "confirm_theme": "Vous avez choisi le thème : {theme}",
         "confirm_sub": "Et le sous-thème : {sub}",
+
+		"rank_newbie": "Débutant",
+		"rank_talker": "Interlocuteur",
+		"rank_chatter": "Bavard",
+		"rank_speaker": "Orateur",
+		"rank_communicator": "Communicateur",
+		"rank_socializer": "Socialiseur",
+		"rank_connector": "Connecteur",
+		"rank_conversationalist": "Conversationniste",
+		"rank_master": "Maître du dialogue",
 
         "it": "💻 Informatique",
     	"programming": "👨‍💻 Programmation",
@@ -1094,6 +1144,16 @@ TEXTS = {
 
         "confirm_theme": "Du hast das Thema gewählt: {theme}",
         "confirm_sub": "Und das Unterthema: {sub}",
+
+		"rank_newbie": "Anfänger",
+		"rank_talker": "Gesprächspartner",
+		"rank_chatter": "Schwätzer",
+		"rank_speaker": "Redner",
+		"rank_communicator": "Kommunikator",
+		"rank_socializer": "Sozialisierer",
+		"rank_connector": "Vernetzer",
+		"rank_conversationalist": "Konversationist",
+		"rank_master": "Meister der Kommunikation",
 
         "it": "💻 IT",
     	"programming": "👨‍💻 Programmierung",
