@@ -12,8 +12,10 @@ from db.user_queries import (
 from handlers.keyboards import kb_chat
 from core.i18n import tr_lang
 
-from db.user_queries import set_chat_started, add_chat_minutes
+
 from datetime import datetime
+
+from db.user_queries import start_chat_timer, stop_chat_timer
 
 
 logger = logging.getLogger(__name__)
