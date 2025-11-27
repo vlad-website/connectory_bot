@@ -18,6 +18,8 @@ from config import ADMIN_IDS
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+from core.profile import send_profile
+
 
 
 
@@ -103,6 +105,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update_user_state(user_id, "menu")
                     user = await get_user(user_id)
                     await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+                    await send_profile(user_id, context)
                 except Exception:
                     logger.exception("Failed to set state=menu after new_partner for user %s", user_id)
                 return
@@ -337,6 +340,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await tr(user, "main_menu"),
                     reply_markup=await kb_main_menu(user)
                 )
+                await send_profile(user_id, context)
                 return
         
             elif text == await tr(user, "btn_support"):
@@ -359,6 +363,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update_user_state(user_id, "menu")
                     user = await get_user(user_id)
                     await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+                    await send_profile(user_id, context)
                 except Exception:
                     logger.exception("Failed to return to menu from theme for user %s", user_id)
                     await update.message.reply_text("❌ Ошибка. Попробуйте /start.")
@@ -404,6 +409,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update_user_state(user_id, "menu")
                     user = await get_user(user_id)
                     await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+                    await send_profile(user_id, context)
                 except Exception:
                     logger.exception("Failed to return to menu from sub for user %s", user_id)
                     await update.message.reply_text("❌ Ошибка. Попробуйте /start.")
@@ -483,6 +489,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await tr(user, "main_menu"),
                     reply_markup=await kb_main_menu(user)
                 )
+                await send_profile(user_id, context)
                 return
         
         # --- Выбор языка в настройках ---
@@ -508,6 +515,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await tr(user, "name_changed"),
                 reply_markup=await kb_main_menu(user)
             )
+            await send_profile(user_id, context)
             return
         
         # --- Смена пола ---
@@ -614,6 +622,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         await tr(user, "main_menu"),
                         reply_markup=await kb_main_menu(user)
                     )
+                    await send_profile(user_id, context)
                 except Exception:
                     logger.exception("Failed to return to menu from menu_after_sub for user %s", user_id)
                 return
@@ -714,6 +723,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update_user_state(user_id, "menu")
                 user = await get_user(user_id)
                 await update.message.reply_text(await tr(user, "main_menu"), reply_markup=await kb_main_menu(user))
+                await send_profile(user_id, context)
             except Exception:
                 logger.exception("Failed to set state=menu after suggest for user %s", user_id)
             return
@@ -727,6 +737,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await tr(user, "main_menu"),
                 reply_markup=await kb_main_menu(user)
             )
+            await send_profile(user_id, context)
             return
 
         
@@ -789,6 +800,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             text=await tr(user, "main_menu"),
             reply_markup=await kb_main_menu(user)
         )
+        await send_profile(user_id, context)
     
         await query.answer()
         return
